@@ -107,6 +107,8 @@ public:
     const QNODE& Child(int c) const { return Children[c]; }
     BELIEF_STATE& Beliefs() { return BeliefState; }
     const BELIEF_STATE& Beliefs() const { return BeliefState; }
+
+    //for bag
     BAG& Bags(){ return Bag; }
     const BAG& Bags() const { return Bag; }
 

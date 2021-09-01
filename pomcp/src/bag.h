@@ -38,7 +38,7 @@ public:
     //sposta un'intera bag
     void Move(BAG& particelle, const SIMULATOR& simulator);
 
-    //
+    //stampa la bag
     void Display(std::ostream& ostr, const SIMULATOR& simulator) const;
 
     //controlla se la bag contiene qualche elemento
@@ -49,7 +49,6 @@ public:
 
     //ritorna l'elemento in posizione index della bag
     const STATE* GetSample(int index) const { return Particles[index]; }
-
 
 
     //ritorna il peso associato all'elemento
@@ -67,7 +66,6 @@ public:
     
 private:
 
-    //std::map<STATE*,int>Particles;
     std::vector<STATE*> Particles;
     std::vector<int> weight;
 };

@@ -74,12 +74,11 @@ private:
     STATE* CreateTransform() const;
     void Resample(BELIEF_STATE& beliefs);
 
-
+    //for bag
     void CreateBag(VNODE*& bag_successiva, int action, int& observation, double& immediateReward, BAG& bag);
     double SimulateV_rho(STATE& state, VNODE* vnode);
     double SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag);
-
-    void AddSample_Bag(VNODE* node, STATE* state, int peso);
+    void AddSample_Bag(VNODE*& node, STATE* state, int peso);
 
 
     // Fast lookup table for UCB
