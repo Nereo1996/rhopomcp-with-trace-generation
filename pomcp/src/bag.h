@@ -62,7 +62,8 @@ public:
     const std::vector<double>& GetBag_Weight() const {return weight;}
     std::vector<double>& GetBag_Weight() {return weight;}
 
-
+    //normalizza i pesi
+    void normalize();
     
 private:
 

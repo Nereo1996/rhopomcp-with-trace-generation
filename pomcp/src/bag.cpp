@@ -109,3 +109,15 @@
 
     }
 
+    void BAG::normalize(){
+
+        double sum = 0;
+        for (int i=0;i<weight.size();i++){
+            sum += weight[i];
+        }
+
+        for(int i=0;i<weight.size();i++){
+            weight[i]= weight[i]/sum;
+        }
+
+    }

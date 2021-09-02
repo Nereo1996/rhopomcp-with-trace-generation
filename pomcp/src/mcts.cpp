@@ -557,7 +557,7 @@
 
 
         void MCTS::CreateBag(VNODE*& bag_successiva, int action, int& observation, double& immediateReward, BAG& bag){
-
+        /*
             // (1) sample a state s from βt
             STATE* s_bag = bag.CreateSample(Simulator);
             STATE* s_particle = Simulator.Copy(*s_bag);
@@ -572,16 +572,16 @@
             //int peso = probability * NUM_PARTICLES;
 
             AddSample_Bag(bag_successiva,s_particle,probability);
-
-
-
+        */
+            BAG normalized;
+            normalized.Copy(bag ,Simulator);
+            normalized.normalize();
 
 
             for (int i =0; i < NUM_PARTICLES; i++){
-                STATE* state_bag = bag.CreateSample(Simulator);
-
-
-                 STATE* s_particle = Simulator.Copy(*s_bag);
+                // (1) sample a state s from βt
+                STATE* s_bag = normalized.CreateSample(Simulator);
+                STATE* s_particle = Simulator.Copy(*s_bag);
                 int temp_obs = observation;
 
                 //(2) sample a state s' by using the generative model, s' ∼ G(s, at)
@@ -595,10 +595,6 @@
                     AddSample_Bag(bag_successiva,s_particle,probability);
 
                 }
-
-
-
-
 
             }
 
