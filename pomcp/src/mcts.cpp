@@ -352,7 +352,7 @@
         }
 
 
-        void MCTS::AddSample_Bag(VNODE*& node, STATE* state, int peso)
+        void MCTS::AddSample_Bag(VNODE*& node, STATE* state, double peso)
         {
             node =ExpandNode(state);
             node->Bags().AddSample(state,peso);
@@ -569,9 +569,38 @@
             //(3) store this particle s' in βt+1 with an associated weight of P (zt+1 |s, at , s')
             // corresponding to the probability of having generated observation zt+1.
             double probability = Simulator.ProbObs(temp_obs,*s_bag,action, *s_particle);
-            int peso = probability * NUM_PARTICLES;
+            //int peso = probability * NUM_PARTICLES;
 
-            AddSample_Bag(bag_successiva,s_particle,peso);
+            AddSample_Bag(bag_successiva,s_particle,probability);
+
+
+
+
+
+            for (int i =0; i < NUM_PARTICLES; i++){
+                STATE* state_bag = bag.CreateSample(Simulator);
+
+
+                 STATE* s_particle = Simulator.Copy(*s_bag);
+                int temp_obs = observation;
+
+                //(2) sample a state s' by using the generative model, s' ∼ G(s, at)
+                bool terminal= Simulator.Step(*s_particle, action, temp_obs, immediateReward);
+
+                //(3) store this particle s' in βt+1 with an associated weight of P (zt+1 |s, at , s')
+                // corresponding to the probability of having generated observation zt+1.
+                double probability = Simulator.ProbObs(temp_obs,*s_bag,action, *s_particle);
+
+                if(probability >0){
+                    AddSample_Bag(bag_successiva,s_particle,probability);
+
+                }
+
+
+
+
+
+            }
 
         }
 

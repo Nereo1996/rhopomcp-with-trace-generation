@@ -29,7 +29,7 @@ public:
     void AddSample(STATE* particle);
 
     //aggiunge uno stato alla bag di particle
-    void AddSample(STATE* particle, int peso);
+    void AddSample(STATE* particle, double peso);
 
 
     //copia un'intera bag
@@ -52,22 +52,22 @@ public:
 
 
     //ritorna il peso associato all'elemento
-    const int GetWeight(int index) const{ return weight[index]; }
+    const double GetWeight(int index) const{ return weight[index]; }
     
     //ritorna tutti gli stati delle particelle
     const std::vector<STATE*>& GetBag_State() const { return Particles; }
     std::vector<STATE*>& GetBag_State() { return Particles; }
 
     //ritorna tutti i pesi delle particelle
-    const std::vector<int>& GetBag_Weight() const {return weight;}
-    std::vector<int>& GetBag_Weight() {return weight;}
+    const std::vector<double>& GetBag_Weight() const {return weight;}
+    std::vector<double>& GetBag_Weight() {return weight;}
 
 
     
 private:
 
     std::vector<STATE*> Particles;
-    std::vector<int> weight;
+    std::vector<double> weight;
 };
 
 #endif // BAG_H

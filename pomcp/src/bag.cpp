@@ -29,7 +29,7 @@
     }
 
     //aggiunge una particle alla bag
-    void BAG::AddSample(STATE* particle, int peso){
+    void BAG::AddSample(STATE* particle, double peso){
 
         bool flag = true;
         for(int i = 0; i < Particles.size();++i){
@@ -55,14 +55,14 @@
 
             if( Particles[i]->isEqual(particle)){
                 flag = false;
-                weight[i]++;
+                weight[i]= weight[i]+1.0;
                 break;
             }
         }
 
         if(flag || Particles.empty()){
             Particles.push_back(particle);
-            weight.push_back(1);
+            weight.push_back(1.0);
         }
     }
 
@@ -102,9 +102,10 @@
         for(std::vector<STATE*>::const_iterator i = iterator.begin(); i!=iterator.end();++i){
             AddSample(*i,particelle.GetWeight(count));
             count++;
-        }   
+    }
 
         particelle.Free(simulator);
+
 
     }
 

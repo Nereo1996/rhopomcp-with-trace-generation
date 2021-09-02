@@ -164,7 +164,7 @@ void Tiger::Validate(const STATE& state) const
 
  	  }
 
- 	  return 1.0;
+ 	  return 0.5;
 
  	  //nb. in questo problema non è necessario utilizzare lo stato successivo.
 }
