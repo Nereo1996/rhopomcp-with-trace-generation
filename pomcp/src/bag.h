@@ -52,7 +52,7 @@ public:
 
 
     //ritorna il peso associato all'elemento
-    const double GetWeight(int index) const{ return weight[index]; }
+    double GetWeight(int index) const{ return weight[index]; }
     
     //ritorna tutti gli stati delle particelle
     const std::vector<STATE*>& GetBag_State() const { return Particles; }
@@ -64,6 +64,10 @@ public:
 
     //normalizza i pesi
     void normalize();
+
+
+    bool checkParticle(STATE* newstate);
+
     
 private:
 

@@ -12,7 +12,7 @@ class BELIEF_STATE;
 class STATE : public MEMORY_OBJECT
 {
 public:
-    virtual bool isEqual(STATE* a) const {return false;};
+    virtual bool isEqual(STATE*) const {return false;};
 };
 
 class SIMULATOR
@@ -77,22 +77,22 @@ public:
     virtual STATE* CreateStartState() const = 0;
 
     // Free memory for state
-    virtual void FreeState(STATE* state) const = 0;
+    virtual void FreeState(STATE*) const = 0;
 
     // Update state according to action, and get observation and reward. 
     // Return value of true indicates termination of episode (if episodic)
-    virtual bool Step(STATE& state, int action, 
-        int& observation, double& reward) const = 0;
+    virtual bool Step(STATE& , int , 
+        int& , double& ) const = 0;
         
     // Create new state and copy argument (must be same type)
-    virtual STATE* Copy(const STATE& state) const = 0;
+    virtual STATE* Copy(const STATE& ) const = 0;
     
     // Sanity check
-    virtual void Validate(const STATE& state) const;
+    virtual void Validate(const STATE& ) const;
 
     // Modify state stochastically to some related state
-    virtual bool LocalMove(STATE& state, const HISTORY& history,
-        int stepObs, const STATUS& status) const;
+    virtual bool LocalMove(STATE& , const HISTORY& ,
+        int , const STATUS& ) const;
 
     // Use domain knowledge to assign prior value and confidence to actions
     // Should only use fully observable state variables
@@ -136,7 +136,7 @@ public:
 
 
     //Probabilità di aver osservato Z_t+1 dallo stato s_t con azione a_t e essere andati in s_t+1
-    virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const{ return 1; }
+    virtual double ProbObs(int , const STATE& , int , const STATE& ) const{ return 1; }
     
 protected:
 

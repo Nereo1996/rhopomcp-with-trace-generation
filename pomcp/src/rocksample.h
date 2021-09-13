@@ -20,6 +20,10 @@ public:
         double LikelihoodWorthless;	// Smart knowledge
         double ProbValuable;		// Smart knowledge
     };
+
+    bool isEqual (STATE* a)const;
+
+
     std::vector<ENTRY> Rocks;
     int Target; // Smart knowledge
 };

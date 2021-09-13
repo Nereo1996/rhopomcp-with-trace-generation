@@ -60,25 +60,45 @@
             }
         }
 
-        if(flag || Particles.empty()){
+        if(flag){
             Particles.push_back(particle);
             weight.push_back(1.0);
         }
+
     }
 
 
+    bool BAG::checkParticle(STATE* newstate){
 
+        for(int i = 0; i < Particles.size();++i){
+
+            if( Particles[i]->isEqual(newstate)){
+                return true;
+            }
+        }
+        return false;
+
+
+
+    }
 
     void BAG::Copy(const BAG& particelle, const SIMULATOR& simulator){
 
         std::vector<STATE*> iterator = particelle.GetBag_State();
         int count=0;
         for(std::vector<STATE*>::const_iterator i = iterator.begin(); i!=iterator.end();++i){
-            AddSample(simulator.Copy(**i), particelle.GetWeight(count));
+            STATE* newstate = simulator.Copy(**i);
+            if(checkParticle(newstate)){
+                AddSample(newstate, particelle.GetWeight(count));
+                simulator.FreeState(newstate);
+            } else{
+                AddSample(newstate, particelle.GetWeight(count));
+            }
             count++;
-        }
-
+        }  
+          
     }
+
 
     void BAG::Display(std::ostream& ostr, const SIMULATOR& simulator) const{
 

@@ -24,6 +24,48 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
         InitGeneral();
 }
 
+
+ bool ROCKSAMPLE_STATE::isEqual(STATE* a)const{
+    ROCKSAMPLE_STATE* A = safe_cast<ROCKSAMPLE_STATE*>(a);
+/*
+    struct ENTRY
+    {
+        bool Valuable;
+        bool Collected;
+        int Count;                  // Smart knowledge
+        int Measured;               // Smart knowledge
+        double LikelihoodValuable;  // Smart knowledge
+        double LikelihoodWorthless; // Smart knowledge
+        double ProbValuable;        // Smart knowledge
+    };
+*/
+    if(Rocks.size() != A->Rocks.size())
+        return false;
+
+    for(int i=0; i< Rocks.size() ; i++){
+        if(A->Rocks[i].Valuable != Rocks[i].Valuable)
+            return false;
+        if(A->Rocks[i].Collected != Rocks[i].Collected)
+            return false;
+        if(A->Rocks[i].Count != Rocks[i].Count)
+            return false;
+        if(A->Rocks[i].Measured != Rocks[i].Measured)
+            return false;
+        if(A->Rocks[i].LikelihoodValuable != Rocks[i].LikelihoodValuable)
+            return false;
+        if(A->Rocks[i].LikelihoodWorthless != Rocks[i].LikelihoodWorthless)
+            return false;
+        if(A->Rocks[i].ProbValuable != Rocks[i].ProbValuable)
+            return false;
+
+    }
+
+
+
+
+    return true;
+}
+
 void ROCKSAMPLE::InitGeneral()
 {
     HalfEfficiencyDistance = 20;
