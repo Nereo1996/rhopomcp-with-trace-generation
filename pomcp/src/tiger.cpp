@@ -9,7 +9,8 @@ using namespace std;
 const double Tiger::NOISE = 0.15;
 
 
-
+	std::random_device rd;
+    std::mt19937 gen(rd());
 
 TigerState::TigerState() :
 tiger_position(0) {
@@ -35,32 +36,41 @@ Tiger::Tiger(){
 
 Tiger::~Tiger(){ };
 
+
+
 bool Tiger::Step(STATE& s, int action, int& observation, double& reward) const 
 {
 	TigerState& state = static_cast<TigerState&>(s);
 	reward = 0;
-	bool terminal;
-
+	//bool terminal;
+	//std::cout << "azione da fare: " << action << std::endl; 
 	if (action == ACT_LEFT){
 		reward = state.tiger_position != action ? 10 : -100; 
 		observation = OBS_NONE;
-		terminal = true;
+		return true;
 
 	} else if (action == ACT_RIGHT ){
 		reward = state.tiger_position != action ? 10 : -100;
 		observation = OBS_NONE;
-		terminal = true;
+		return true;
 	} else{
 		reward = -1;
-		if(Tiger::GetObservation(state) == OBS_RIGHT){
-			observation = (state.tiger_position == POS_RIGHT?  OBS_RIGHT : OBS_LEFT);		
-		}else{
-			observation = (state.tiger_position == POS_LEFT? OBS_LEFT : OBS_RIGHT);	
-		}
-		terminal = false;
+
+     	std::bernoulli_distribution d(0.85);
+
+     	if(d(gen))
+     		observation = (state.tiger_position == POS_RIGHT?  OBS_RIGHT : OBS_LEFT);
+     	else
+     		observation = (state.tiger_position == POS_RIGHT? OBS_LEFT : OBS_RIGHT);
+
+     	//std::cout << "posizione tigre: " << state.tiger_position << " osservazione: " << observation << std::endl;	
+		return false;
 	}
-	return terminal;
+
+
+	//return terminal;
 }
+
 
 STATE* Tiger::Copy(const STATE& state) const{
 	
@@ -74,21 +84,25 @@ STATE* Tiger::Copy(const STATE& state) const{
 
 
 
-int Tiger::GetObservation(const TigerState& tigerstate) const
+/*int Tiger::GetObservation(const TigerState& tigerstate) const
 {
-	if (Bernoulli(1-Tiger::NOISE))
+		std::random_device rd;
+    	std::mt19937 gen(rd());
+
+     	std::bernoulli_distribution d(0.85);
+
+
+	if (d(gen))
 		return OBS_RIGHT;
 	else
 		return OBS_LEFT;
 }
 
+*/
+
 STATE* Tiger::CreateStartState() const
 {
 	TigerState* tigerstate = MemoryPool.Allocate();
-
-	std::random_device rd;
-    std::mt19937 gen(rd());
-
      std::bernoulli_distribution d(0.50);
 
   	//std::default_random_engine generator;
@@ -121,9 +135,18 @@ void Tiger::Validate(const STATE& state) const
 }
 
 
+ bool TigerState::isEqual(const STATE* a)const{
+ 	const TigerState* A = safe_cast<const TigerState*>(a);
+
+ 	if(tiger_position == A->tiger_position)
+ 		return true;
+ 	return false;
+ }
+
+
 
  bool TigerState::isEqual (STATE* a)const{
- 	 TigerState* A = safe_cast< TigerState*>(a);
+ 	 TigerState* A = safe_cast<TigerState*>(a);
 
  	if(tiger_position == A->tiger_position)
  		return true;
@@ -147,24 +170,26 @@ void Tiger::Validate(const STATE& state) const
  	  const TigerState startTigerstate = static_cast<const TigerState&>(startingState);
  	  const TigerState finalTigerstate = static_cast<const TigerState&>(finalState);
 
+ 	  //std::cout << "azione fatta: " << action << " osservazione fatta: " << observation << std::endl;
+ 	  if(observation == OBS_NONE)
+ 	  	return 1.0;
+
  	  if(startTigerstate.tiger_position == POS_RIGHT){
 
- 	   if(action == ACT_OBS && observation == OBS_RIGHT)
- 	  		return 1-Tiger::NOISE;
- 	  	else if(action == ACT_OBS && observation == OBS_LEFT)// manca il caso (action == ACT_OBS && observation == OBS_LEFT)
+ 	   if(observation == OBS_RIGHT) //action == ACT_OBS inutile, in caso di altre azioni avrebbe già terminato.
+ 	  		return 1.0-Tiger::NOISE;
+ 	  	else if(observation == OBS_LEFT)//action == ACT_OBS 
  	  		return Tiger::NOISE;
 
  	  } else{ //caso startTigerstate.tiger_position == POS_LEFT
 
- 	 	 if(action == ACT_OBS && observation == OBS_LEFT)
- 	  		return 1-Tiger::NOISE;
- 	 	 else if(action == ACT_OBS && observation == OBS_RIGHT) // manca il caso (action == ACT_OBS && observation == OBS_RIGHT)
+ 	 	 if(observation == OBS_LEFT)
+ 	  		return 1.0-Tiger::NOISE;
+ 	 	 else if(observation == OBS_RIGHT) // manca il caso (action == ACT_OBS && observation == OBS_RIGHT)
  	  		return Tiger::NOISE;
 
 
  	  }
-
- 	  return 0.5;
 
  	  //nb. in questo problema non è necessario utilizzare lo stato successivo.
 }
@@ -173,34 +198,37 @@ void Tiger::Validate(const STATE& state) const
 
     void Tiger::DisplayBeliefs(const BELIEF_STATE& beliefState, std::ostream& ostr) const{
 
+
+		double right =0;
+		double left =0;
+
+
+    	for(int i=0; i< beliefState.GetNumSamples(); i++){
+    		//const TigerState* state = static_cast<const TigerState*>(beliefState.GetSample(i));
+    		const TigerState* state = safe_cast<const TigerState*>(beliefState.GetSample(i));
+    		if(state->tiger_position == POS_RIGHT)
+    			right++;
+    		else
+    			left++;
+
+		}
+			ostr << "BELIEF_STATE: \n";
+            ostr << "[ RIGHT";
+            ostr << ", PESO: ";
+            ostr <<  right << ", NORMALIZZATO: " << right/beliefState.GetNumSamples() << " ]\n";
+             ostr << "[ LEFT";
+            ostr << ", PESO: ";
+            ostr << left << ", NORMALIZZATO: "  <<left/beliefState.GetNumSamples() <<  " ]\n" << std::endl;
+       
+    	
     }
+
+
+
+
+
+
+
     void Tiger::DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const{
-
-
     }
 
-
-
-    /*
-
-		if(action == ACT_LEFT && observation == OBS_GOOD)
- 	  		return #bo;
- 	  	else if(action == ACT_LEFT && observation == OBS_BAD)
- 	  		return #bo;
- 	  	else if(action == ACT_LEFT && observation == OBS_NONE)
- 	  		return #bo;
- 	  	else if(action == ACT_RIGHT && observation == OBS_GOOD)
- 	  		return #bo;
- 	  	else if(action == ACT_RIGHT && observation == OBS_BAD)
- 	  		return #bo;
- 	  	else if(action == ACT_LEFT && observation == OBS_NONE)
- 	  		return #bo;
- 	  	else if(action == ACT_OBS && observation == OBS_GOOD)
- 	  		return #bo;
- 	  	else if(action == ACT_OBS && observation == OBS_BAD)
- 	  		return #bo;
- 	  	else if(action == ACT_OBS && observation == OBS_NONE)
- 	  		return #bo;
-
-
-    */

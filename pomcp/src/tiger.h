@@ -15,6 +15,8 @@ public:
 
     //confronta se due stati sono equivalenti
     bool isEqual (STATE* a)const;
+    bool isEqual(const STATE*) const;
+
 
 };
 
@@ -35,6 +37,7 @@ public:
     virtual void FreeState(STATE* state) const;
     virtual STATE* Copy(const STATE& state) const;
     virtual void DisplayState(const STATE& state, std::ostream& ostr) const;
+
 
     virtual void DisplayBeliefs(const BELIEF_STATE& beliefState, std::ostream& ostr) const;
     virtual void DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const;

@@ -13,6 +13,7 @@ class STATE : public MEMORY_OBJECT
 {
 public:
     virtual bool isEqual(STATE*) const {return false;};
+    virtual bool isEqual(const STATE*) const {return false;};
 };
 
 class SIMULATOR

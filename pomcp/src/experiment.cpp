@@ -53,12 +53,15 @@ void EXPERIMENT::Run()
     STATE* state = Real.CreateStartState();
     if (SearchParams.Verbose >= 1)
         Real.DisplayState(*state, cout);
-
     for (t = 0; t < ExpParams.NumSteps; t++)
     {
+        //std::cout << "step numero :" << t << std::endl;
         int observation;
         double reward;
         int action = mcts.SelectAction();
+
+
+        std::cout << "azione migliore secondo la simulazione mcts:" << action << std::endl;
         terminal = Real.Step(*state, action, observation, reward);
 
         Results.Reward.Add(reward);

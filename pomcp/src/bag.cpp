@@ -19,13 +19,31 @@
         weight.clear();
 
     }
-
+/*
     //campiona uno stato e lo manda al chiamante
     STATE* BAG::CreateSample(const SIMULATOR& simulator) const {
 
         const int index = Random(Particles.size());
         const STATE* temp = (const STATE*)GetSample(index);
         return simulator.Copy(*GetSample(index));
+    }
+*/
+    STATE* BAG::CreateSample(const SIMULATOR& simulator) const{
+        //srand(time(NULL));
+
+        double r = ((double) rand() / (RAND_MAX));
+        //std::cout << "r= " << r << std::endl;
+        for(int i=0; i< Particles.size() ; i++){
+            if(r <= weight[i]){
+                //std::cout << "ho scelto lo stato con weight= " << weight[i] << std::endl;
+                //const STATE* temp = (const STATE*)GetSample(i);
+                return simulator.Copy(*GetSample(i));
+            } else{
+                r = r-weight[i];
+            }
+        }
+
+
     }
 
     //aggiunge una particle alla bag
@@ -131,6 +149,8 @@
 
     void BAG::normalize(){
 
+
+
         double sum = 0;
         for (int i=0;i<weight.size();i++){
             sum += weight[i];
@@ -138,6 +158,8 @@
 
         for(int i=0;i<weight.size();i++){
             weight[i]= weight[i]/sum;
+            //weight[i] = ((float)((int)(weight[i]*1000.0f)))/1000.0f; 
         }
+
 
     }

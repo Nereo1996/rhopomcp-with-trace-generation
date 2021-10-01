@@ -47,22 +47,8 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
             return false;
         if(A->Rocks[i].Collected != Rocks[i].Collected)
             return false;
-        if(A->Rocks[i].Count != Rocks[i].Count)
-            return false;
-        if(A->Rocks[i].Measured != Rocks[i].Measured)
-            return false;
-        if(A->Rocks[i].LikelihoodValuable != Rocks[i].LikelihoodValuable)
-            return false;
-        if(A->Rocks[i].LikelihoodWorthless != Rocks[i].LikelihoodWorthless)
-            return false;
-        if(A->Rocks[i].ProbValuable != Rocks[i].ProbValuable)
-            return false;
 
     }
-
-
-
-
     return true;
 }
 
