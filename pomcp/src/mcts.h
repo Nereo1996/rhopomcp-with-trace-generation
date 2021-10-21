@@ -31,6 +31,8 @@ public:
     MCTS(const SIMULATOR& simulator, const PARAMS& params);
     ~MCTS();
 
+    void Free();
+
     int SelectAction();
     bool Update(int action, int observation, double reward);
 

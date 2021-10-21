@@ -168,8 +168,8 @@ pomcp-main.o: main.cpp /usr/include/stdc-predef.h battleship.h \
  /usr/include/c++/9/istream /usr/include/c++/9/bits/istream.tcc grid.h \
  /usr/include/c++/9/list /usr/include/c++/9/bits/stl_list.h \
  /usr/include/c++/9/bits/allocated_ptr.h /usr/include/c++/9/bits/list.tcc \
- mcts.h statistic.h network.h pocman.h rocksample.h tag.h tiger.h \
- experiment.h /usr/include/c++/9/fstream \
+ mcts.h statistic.h network.h pocman.h rocksample.h rhoRocksample.h tag.h \
+ tiger.h rhoTiger.h experiment.h /usr/include/c++/9/fstream \
  /usr/include/c++/9/bits/codecvt.h \
  /usr/include/aarch64-linux-gnu/c++/9/bits/basic_file.h \
  /usr/include/aarch64-linux-gnu/c++/9/bits/c++io.h \
@@ -1388,9 +1388,13 @@ pocman.h:
 
 rocksample.h:
 
+rhoRocksample.h:
+
 tag.h:
 
 tiger.h:
+
+rhoTiger.h:
 
 experiment.h:
 

@@ -3,8 +3,10 @@
 #include "network.h"
 #include "pocman.h"
 #include "rocksample.h"
+#include "rhoRocksample.h"
 #include "tag.h"
 #include "tiger.h"
+#include "rhoTiger.h"
 #include "experiment.h"
 #include <boost/program_options.hpp>
 
@@ -118,6 +120,11 @@ int main(int argc, char* argv[])
         real = new ROCKSAMPLE(size, number);
         simulator = new ROCKSAMPLE(size, number);
     }
+    else if (problem == "rhorocksample")
+    {
+        real = new RHOROCKSAMPLE(size, number);
+        simulator = new RHOROCKSAMPLE(size, number);
+    }
     else if (problem == "tag")
     {
         real = new TAG(number);
@@ -127,6 +134,11 @@ int main(int argc, char* argv[])
     {
         real = new Tiger();
         simulator = new Tiger();
+    }
+    else if(problem == "rhotiger")
+    {
+        real = new RhoTiger();
+        simulator = new RhoTiger();
     }
     else 
     {

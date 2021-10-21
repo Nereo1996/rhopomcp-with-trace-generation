@@ -1,5 +1,8 @@
-//#ifndef TIGER_H
-//#define TIGER_H
+#ifndef TIGER_H
+#define TIGER_H
+
+
+
 #include "simulator.h"
 #include <vector>
 
@@ -10,13 +13,9 @@ public:
 	int tiger_position;
 
 	TigerState();
-
 	TigerState(int position);
-
-    //confronta se due stati sono equivalenti
     bool isEqual (STATE* a)const;
     bool isEqual(const STATE*) const;
-
 
 };
 
@@ -30,8 +29,9 @@ public:
 	Tiger();
 	~Tiger();
 	bool Step(STATE& s, int action, int& observation, double& reward) const;
+
+
 	int NumStates() const;
-	int GetObservation(const TigerState& tigerstate) const;
 	virtual void Validate(const STATE& state) const;
 	virtual STATE* CreateStartState() const;
     virtual void FreeState(STATE* state) const;
@@ -42,7 +42,10 @@ public:
     virtual void DisplayBeliefs(const BELIEF_STATE& beliefState, std::ostream& ostr) const;
     virtual void DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const;
 
-    virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
+
+    //virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
+    //virtual void Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) const;
+
 
 
  enum
@@ -67,4 +70,4 @@ public:
 
 };
 
-//#endif // TIGER_H
+#endif // TIGER_H

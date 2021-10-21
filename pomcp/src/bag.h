@@ -65,6 +65,8 @@ public:
     //normalizza i pesi
     void normalize();
 
+    int ParticlePosition(STATE& state);
+
 
     bool checkParticle(STATE* newstate);
 

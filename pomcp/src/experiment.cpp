@@ -130,6 +130,7 @@ void EXPERIMENT::Run()
 
             history.Add(action, observation);
         }
+
     }
 
     Results.Time.Add(timer.elapsed());
@@ -139,6 +140,7 @@ void EXPERIMENT::Run()
         << ", average = " << Results.DiscountedReturn.GetMean() << endl;
     cout << "Undiscounted return = " << undiscountedReturn
         << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
+
 }
 
 void EXPERIMENT::MultiRun()

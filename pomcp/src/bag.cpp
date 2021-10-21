@@ -30,13 +30,9 @@
 */
     STATE* BAG::CreateSample(const SIMULATOR& simulator) const{
         //srand(time(NULL));
-
         double r = ((double) rand() / (RAND_MAX));
-        //std::cout << "r= " << r << std::endl;
         for(int i=0; i< Particles.size() ; i++){
             if(r <= weight[i]){
-                //std::cout << "ho scelto lo stato con weight= " << weight[i] << std::endl;
-                //const STATE* temp = (const STATE*)GetSample(i);
                 return simulator.Copy(*GetSample(i));
             } else{
                 r = r-weight[i];
@@ -54,6 +50,7 @@
             if( Particles[i]->isEqual(particle)){
                 flag = false;
                 weight[i] = weight[i]+peso;
+                //Simulator.FreeState(particle);
                 break;
             }
         }
@@ -74,6 +71,7 @@
             if( Particles[i]->isEqual(particle)){
                 flag = false;
                 weight[i]= weight[i]+1.0;
+                //simulator.FreeState(particle);
                 break;
             }
         }
@@ -144,7 +142,6 @@
 
         particelle.Free(simulator);
 
-
     }
 
     void BAG::normalize(){
@@ -162,4 +159,21 @@
         }
 
 
+    }
+
+
+    int BAG::ParticlePosition(STATE& state){
+        for(int i =0; i < Particles.size(); ++i){
+           // std::cout << "\nstato" << std::endl;
+           // simulator.DisplayState(state,std::cout);
+
+           // std::cout << "\n Particles[i] con i = "<< i<< std::endl;
+           // simulator.DisplayState(*Particles[i],std::cout);
+            if( Particles[i]->isEqual(&state) ){
+             //   std::cout << "ritorno i = " << i << std::endl;
+                return i;
+            }
+        }
+
+        return -1;
     }

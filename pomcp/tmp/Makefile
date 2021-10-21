@@ -56,10 +56,8 @@ am_pomcp_OBJECTS = pomcp-battleship.$(OBJEXT) \
 	pomcp-rocksample.$(OBJEXT) pomcp-simulator.$(OBJEXT) \
 	pomcp-tiger.$(OBJEXT) pomcp-tag.$(OBJEXT) \
 	pomcp-testsimulator.$(OBJEXT) \
-	pomcp-utils.$(OBJEXT) \
-	rhopomcp-tiger.$(OBJEXT) \
-	rhopomcp-rocksample.$(OBJEXT) 
-
+	pomcp-utils.$(OBJEXT)
+	#rhopomcp-tiger.$(OBJEXT) \
 pomcp_OBJECTS = $(am_pomcp_OBJECTS)
 am__DEPENDENCIES_1 =
 pomcp_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -185,9 +183,8 @@ rocksample.cpp \
 simulator.cpp \
 tag.cpp \
 testsimulator.cpp \
-utils.cpp \
-rhoTiger.cpp \
-rhoRocksample.cpp
+utils.cpp
+#rhoTiger.cpp 
 
 noinst_HEADERS = \
 battleship.h \
@@ -208,9 +205,9 @@ simulator.h \
 statistic.h \
 tag.h \
 testsimulator.h \
-utils.h \
-rhoTiger.h \
-rhoRocksample.h
+utils.h
+
+#rhoTiger.h 
 
 pomcp_LDFLAGS = $(BOOST_LDFLAGS)
 pomcp_LDADD = \
@@ -299,7 +296,6 @@ include ./$(DEPDIR)/pomcp-pocman.Po
 include ./$(DEPDIR)/pomcp-rocksample.Po
 #include ./$(DEPDIR)/pomcp-tiger.Po
 #include ./$(DEPDIR)/rhopomcp-tiger.Po
-#include ./$(DEPDIR)/rhopomcp-rocksample.Po
 include ./$(DEPDIR)/pomcp-simulator.Po
 include ./$(DEPDIR)/pomcp-tag.Po
 include ./$(DEPDIR)/pomcp-testsimulator.Po
@@ -476,24 +472,6 @@ pomcp-rocksample.obj: rocksample.cpp
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pomcp-rocksample.obj `if test -f 'rocksample.cpp'; then $(CYGPATH_W) 'rocksample.cpp'; else $(CYGPATH_W) '$(srcdir)/rocksample.cpp'; fi`
 
-
-rhopomcp-rocksample.o: rhoRocksample.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT rhopomcp-rocksample.o -MD -MP -MF $(DEPDIR)/rhopomcp-rocksample.Tpo -c -o rhopomcp-rocksample.o `test -f 'rhoRocksample.cpp' || echo '$(srcdir)/'`rhoRocksample.cpp
-	mv -f $(DEPDIR)/rhopomcp-rocksample.Tpo $(DEPDIR)/rhopomcp-rocksample.Po
-#	source='rocksample.cpp' object='pomcp-rocksample.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pomcp-rocksample.o `test -f 'rocksample.cpp' || echo '$(srcdir)/'`rocksample.cpp
-
-rhopomcp-rocksample.obj: rhoRocksample.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT rhopomcp-rocksample.obj -MD -MP -MF $(DEPDIR)/rhopomcp-rocksample.Tpo -c -o rhopomcp-rocksample.obj `if test -f 'rhoRocksample.cpp'; then $(CYGPATH_W) 'rhoRocksample.cpp'; else $(CYGPATH_W) '$(srcdir)/rhoRocksample.cpp'; fi`
-	mv -f $(DEPDIR)/rhopomcp-rocksample.Tpo $(DEPDIR)/rhopomcp-rocksample.Po
-#	source='rocksample.cpp' object='pomcp-rocksample.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pomcp-rocksample.obj `if test -f 'rocksample.cpp'; then $(CYGPATH_W) 'rocksample.cpp'; else $(CYGPATH_W) '$(srcdir)/rocksample.cpp'; fi`
-
-
-
-
 pomcp-tiger.o: tiger.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT pomcp-tiger.o -MD -MP -MF $(DEPDIR)/pomcp-tiger.Tpo -c -o pomcp-tiger.o `test -f 'tiger.cpp' || echo '$(srcdir)/'`tiger.cpp
 	mv -f $(DEPDIR)/pomcp-tiger.Tpo $(DEPDIR)/pomcp-tiger.Po
@@ -510,16 +488,16 @@ pomcp-tiger.obj: tiger.cpp
 
 
 
-rhopomcp-tiger.o: rhoTiger.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT rhopomcp-tiger.o -MD -MP -MF $(DEPDIR)/rhopomcp-tiger.Tpo -c -o rhopomcp-tiger.o `test -f 'rhoTiger.cpp' || echo '$(srcdir)/'`rhoTiger.cpp
-	mv -f $(DEPDIR)/rhopomcp-tiger.Tpo $(DEPDIR)/rhopomcp-tiger.Po
+#rhopomcp-tiger.o: rhoTiger.cpp
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT rhopomcp-tiger.o -MD -MP -MF $(DEPDIR)/rhopomcp-tiger.Tpo -c -o rhopomcp-tiger.o `test -f 'rhoTiger.cpp' || echo '$(srcdir)/'`rhoTiger.cpp
+#	mv -f $(DEPDIR)/rhopomcp-tiger.Tpo $(DEPDIR)/rhopomcp-tiger.Po
 #	source='tiger.cpp' object='pomcp-tiger.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pomcp-tiger.o `test -f 'tiger.cpp' || echo '$(srcdir)/'`tiger.cpp
 
-rhopomcp-tiger.obj: rhoTiger.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT rhopomcp-tiger.obj -MD -MP -MF $(DEPDIR)/rhopomcp-tiger.Tpo -c -o rhopomcp-tiger.obj `if test -f 'rhoTiger.cpp'; then $(CYGPATH_W) 'rhopomcp-tiger.cpp'; else $(CYGPATH_W) '$(srcdir)/rhoTiger.cpp'; fi`
-	mv -f $(DEPDIR)/rhopomcp-tiger.Tpo $(DEPDIR)/rhopomcp-tiger.Po
+#rhopomcp-tiger.obj: rhoTiger.cpp
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT rhopomcp-tiger.obj -MD -MP -MF $(DEPDIR)/rhopomcp-tiger.Tpo -c -o rhopomcp-tiger.obj `if test -f 'rhoTiger.cpp'; then $(CYGPATH_W) 'rhopomcp-tiger.cpp'; else $(CYGPATH_W) '$(srcdir)/rhoTiger.cpp'; fi`
+#	mv -f $(DEPDIR)/rhopomcp-tiger.Tpo $(DEPDIR)/rhopomcp-tiger.Po
 #	source='tiger.cpp' object='pomcp-tiger.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(pomcp_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pomcp-tiger.obj `if test -f 'tiger.cpp'; then $(CYGPATH_W) 'tiger.cpp'; else $(CYGPATH_W) '$(srcdir)/tiger.cpp'; fi`
