@@ -15,6 +15,7 @@ public:
 	TigerState();
 	TigerState(int position);
     bool isEqual (STATE* a)const;
+    void x(const STATE*) const;
     bool isEqual(const STATE*) const;
 
 };
@@ -30,7 +31,6 @@ public:
 	~Tiger();
 	bool Step(STATE& s, int action, int& observation, double& reward) const;
 
-
 	int NumStates() const;
 	virtual void Validate(const STATE& state) const;
 	virtual STATE* CreateStartState() const;
@@ -42,6 +42,8 @@ public:
     virtual void DisplayBeliefs(const BELIEF_STATE& beliefState, std::ostream& ostr) const;
     virtual void DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const;
 
+    virtual int reward(const STATE& state, int action) const;
+    virtual int observation(STATE& state, int action) const;
 
     //virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
     //virtual void Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) const;

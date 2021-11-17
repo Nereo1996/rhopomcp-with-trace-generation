@@ -42,6 +42,15 @@ bool Tiger::Step(STATE& s, int action, int& observation, double& reward) const
 {
 	TigerState& state = static_cast<TigerState&>(s);
 	reward = 0;
+	reward = Tiger::reward(s,action);
+	observation = Tiger::observation(s,action);
+
+	if(action == ACT_OBS)
+		return false;
+	else
+		return true;
+
+/*
 	//std::cout << "azione da fare: " << action << std::endl; 
 	if (action == ACT_LEFT){
 		reward = state.tiger_position != action ? 10 : -100; 
@@ -65,12 +74,62 @@ bool Tiger::Step(STATE& s, int action, int& observation, double& reward) const
      	//std::cout << "posizione tigre: " << state.tiger_position << " osservazione: " << observation << std::endl;	
 		return false;
 	}
-
+*/
 }
 
+ int Tiger::reward(const STATE& state, int action ) const{
+ 	 const TigerState s = static_cast<const TigerState&>(state);
 
-   
 
+	if (action == ACT_OBS) {
+			// cost -1
+			return -1;
+		}
+
+		// if open left
+		if (action == ACT_LEFT) {
+			// if tiger left
+			if (s.tiger_position == POS_LEFT)
+				return -100;
+			else
+				return 10;
+
+		}
+
+		// if open right
+		if (action == ACT_RIGHT) {
+			// if tiger right
+			if (s.tiger_position == POS_RIGHT)
+				return -100;
+			else 
+				return 10;
+		}
+
+		return 0;
+	}
+
+
+
+ int Tiger::observation(STATE& state , int action) const {
+		// if open, any observation
+		if((action == ACT_RIGHT) || (action == ACT_LEFT)) {
+			return OBS_NONE;
+		}
+
+	TigerState s = static_cast<TigerState&>(state);
+
+		// if listening
+		if (action == ACT_OBS) {
+
+	        double r = ((double) rand() / (RAND_MAX));
+
+            if(r <= 0.85){
+                return (s.tiger_position == POS_RIGHT?  OBS_RIGHT : OBS_LEFT);
+            } else{
+                return (s.tiger_position == POS_RIGHT? OBS_LEFT : OBS_RIGHT);
+            }
+		}
+	}
 
 
 STATE* Tiger::Copy(const STATE& state) const{
@@ -87,7 +146,12 @@ STATE* Tiger::Copy(const STATE& state) const{
 STATE* Tiger::CreateStartState() const
 {
 	TigerState* tigerstate = MemoryPool.Allocate();
-     std::bernoulli_distribution d(0.50);
+
+	double r = ((double) rand() / (RAND_MAX));
+	//std::cout << r << std::endl;
+
+   //  std::bernoulli_distribution d(0.50);
+
 
   	//std::default_random_engine generator;
 
@@ -95,8 +159,9 @@ STATE* Tiger::CreateStartState() const
 
 	//std::cout << "Sei entrato in CreateStartState! ora proverai a fare Bernoulli.." << std::endl;
 
-	  if(d(gen)){
-		tigerstate -> tiger_position = POS_RIGHT;
+	  //if(d(gen)){
+	if(r>=0.5){
+			tigerstate -> tiger_position = POS_RIGHT;
 	}
 	else{
 		tigerstate->tiger_position = POS_LEFT;
@@ -127,6 +192,11 @@ void Tiger::Validate(const STATE& state) const
  	return false;
  }
 
+
+ void TigerState::x(const STATE* a)const{
+ 	const TigerState* A = safe_cast<const TigerState*>(a);
+ 	std::cout << "tiger_position di Particles[i]" << tiger_position << " tiger_position di particle: " << A->tiger_position << std::endl;
+ }
 
 
  bool TigerState::isEqual (STATE* a)const{

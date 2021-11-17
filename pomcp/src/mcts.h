@@ -79,10 +79,12 @@ private:
     //for bag
     //void CreateBag(VNODE*& bag_successiva, int action, int& observation, double& immediateReward, BAG& bag);
     void CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next);
+    BAG CreateBag_beta(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next);
     double SimulateV_rho(STATE& state, VNODE* vnode, BAG& bag);
     double SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag);
     void AddSample_Bag(VNODE*& node, STATE& state, double peso);
-    void generateInitialBag(STATE* state, const BAG& initialBelief, BAG& bag);
+    BAG generateInitialBag(STATE* state, BAG& initialBelief);
+    void generateInitialBag_beta(STATE* state, BAG& initialBelief,BAG& result);
 
     // Fast lookup table for UCB
     static const int UCB_N = 10000, UCB_n = 100;

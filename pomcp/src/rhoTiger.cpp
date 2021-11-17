@@ -6,20 +6,6 @@
 using namespace UTILS;
 using namespace std;
 
-
-/*
-RhoTigerState::RhoTigerState(){
-	tiger_position =0; 
-}
-
-RhoTigerState::RhoTigerState(int position) {
-	tiger_position=position;
-}
-
-RhoTigerState::~RhoTigerState(){
-}
-
-*/
  RhoTiger::~RhoTiger(){
 
     }
@@ -32,14 +18,27 @@ RhoTigerState::~RhoTigerState(){
     }
 
 
-     void RhoTiger::Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) const
+     double RhoTiger::Rho_reward(STATE& s, BAG& beliefs, int action) const
     {
-    	
+
+    	double r = 0;
     	for(int i =0 ; i < beliefs.GetNumSamples(); i++){
-    		//reward(s, AZIONE)
+    		int x = reward(*beliefs.GetSample(i), action);
+    		r+= x * beliefs.GetWeight(i);
     	}
-    	
-		//reward = reward * beliefs.GetWeight(pos);
+    	return r;
+
+/*
+    	TigerState state = static_cast< TigerState&>(s);
+
+    	for(int i =0 ; i < beliefs.GetNumSamples(); i++){
+    		if(s.isEqual(beliefs.GetSample(i))){
+    			int x = reward(*beliefs.GetSample(i), action);
+    			return x * beliefs.GetWeight(i);
+    		}
+    	}
+    	return 0;
+*/
 
 	}
 
@@ -69,7 +68,10 @@ RhoTigerState::~RhoTigerState(){
  	  }
 
  	  //nb. in questo problema non è necessario utilizzare lo stato successivo.
+
+ 	  return 0.5;
 }
+
 
 
 /*

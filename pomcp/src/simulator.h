@@ -14,6 +14,7 @@ class STATE : public MEMORY_OBJECT
 public:
     virtual bool isEqual(STATE*) const {return false;};
     virtual bool isEqual(const STATE*) const {return false;};
+    virtual void x(const STATE*) const {return;};
 };
 
 class SIMULATOR
@@ -87,10 +88,6 @@ public:
 
 
 
-    //virtual double reward(STATE&, int ) const{};
-
-    //virtual int observation(STATE&, int) const {};
-
 
 
         
@@ -148,8 +145,14 @@ public:
     //Probabilità di aver osservato Z_t+1 dallo stato s_t con azione a_t e essere andati in s_t+1
     virtual double ProbObs(int , const STATE& , int , const STATE& ) const{ return 1; }
 
+
+    virtual int reward(const STATE&, int ) const{};
+
+    virtual int observation(STATE&, int) const {};
+
+
     //assegnamento reward caso rho
-    virtual void Rho_reward(STATE& , BAG& , double&, int ) const{}
+    virtual double Rho_reward(STATE& , BAG&, int ) const{}
     
 protected:
 

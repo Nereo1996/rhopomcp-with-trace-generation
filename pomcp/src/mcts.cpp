@@ -11,6 +11,12 @@ using namespace UTILS;
 
 const int NUM_PARTICLES = 50;
 
+static bool PRINT_VALUES = false;
+static bool PRINT_IT = false;
+static bool PRINT_DEBUG_TREE = false;
+
+
+
 
 MCTS::PARAMS::PARAMS()
 :   Verbose(0),
@@ -44,6 +50,8 @@ TreeDepth(0)
     for (int i = 0; i < Params.NumStartStates; i++)
         Root->Beliefs().AddSample(Simulator.CreateStartState());
 
+    cout << "counter prima " << endl;
+    Root->Bags().print_addedSample();
 
     //cout << "belief iniziale" << endl;
     //Simulator.DisplayBeliefs(Root->Beliefs(),std::cout);
@@ -51,18 +59,21 @@ TreeDepth(0)
 
     //creazione della prima bag di particelle
     for(int j=0; j< NUM_PARTICLES; j++)
-        Root->Bags().AddSample(Simulator.CreateStartState());
+        Root->Bags().AddSample(Simulator.CreateStartState(), Simulator);
+
+    cout << "counter dopo" << endl;
+    Root->Bags().print_addedSample(); 
+
 
     Root->Bags().normalize();
     //stampo a video la bag
     //cout << "bag iniziale" << endl;
-    //Root->Bags().Display(std::cout, Simulator);
+   // Root->Bags().Display(std::cout, Simulator);
 
 }
 
 MCTS::~MCTS()
 {
-    cout <<"fai qst" << endl;
     VNODE::Free(Root, Simulator);
     VNODE::FreeAll();
 }
@@ -111,6 +122,9 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
 
     // Delete old tree and create new root
     VNODE::Free(Root, Simulator);
+
+
+
     VNODE* newRoot = ExpandNode(state);
     newRoot->Beliefs() = beliefs;
     bag.normalize();
@@ -118,10 +132,16 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
 
     Root = newRoot;
 
- //   cout << "bag dopo aver fatto un passo" << endl;
- //   Root->Bags().Display(std::cout, Simulator);
- //   cout << "belief dopo aver fatto un passo" << endl;
- //   Simulator.DisplayBeliefs(Root->Beliefs(),std::cout);
+    bag.Free(Simulator);
+
+    if(PRINT_VALUES){
+        cout << "bag dopo aver fatto un passo" << endl;
+        Root->Bags().Display(std::cout, Simulator);
+
+        cout << "belief dopo aver fatto un passo" << endl;
+        Simulator.DisplayBeliefs(Root->Beliefs(),std::cout);
+
+    }  
     
     return true;
 }
@@ -178,14 +198,27 @@ void MCTS::UCTSearch()
     int historyDepth = History.Size();
     //SEARCH IN RHOPOMCP :  // create a belief from root particles: Belief<S> rootBelief = new Belief<>(root.getBag());
     BAG rootBelief;
+   // rootBelief.AddSample(Simulator.CreateStartState(), Simulator);
+
     rootBelief.Copy(Root->Bags() ,Simulator);
+
     //rootBelief.normalize(); //equivalente in rhopomcp di:  Belief<S> rootBelief = new Belief<>(root.getBag());
     
-    for (int n = 0; n < Params.NumSimulations; n++)
+//     for(int j=0; j< NUM_PARTICLES; j++)
+//        Root->Bags().AddSample(Simulator.CreateStartState(), Simulator);
+
+    //Root->Bags().normalize();
+
+
+    for (int n = 0; n < Params.NumSimulations; n++)    
     {
         //OneDescent(rootBelief) 
         STATE* state = Root->Beliefs().CreateSample(Simulator);
-        //STATE* state = rootBelief.CreateSample(Simulator); // == S state = rootBelief.sample();
+        //STATE* state = rootBelief.CreateSample(Simulator);
+
+      //  STATE* s = rootBelief.CreateSample(Simulator); // == S state = rootBelief.sample();
+       // STATE* s = rootBelief.CreateSample(Simulator); // == S state = rootBelief.sample()
+
         Simulator.Validate(*state);
         Status.Phase = SIMULATOR::STATUS::TREE;
         if (Params.Verbose >= 2)
@@ -199,17 +232,21 @@ void MCTS::UCTSearch()
 
         // generate initial bag (WITH initial state)
          //Bag<S> bag = this.generatorB.generateInitialBag(state, rootBelief);
-        BAG bag;
-        generateInitialBag(state,rootBelief, bag);
-
-       
+        //BAG bag = generateInitialBag(state,rootBelief);
+        BAG bag = generateInitialBag(state,rootBelief);
+      //  BAG bag;
+      //  generateInitialBag_beta(state,rootBelief,bag);
+      //  cout << "initial bag:" << endl;
+      //  bag.Display(cout,Simulator);
 
         double totalReward = SimulateV_rho(*state, Root, bag);
-
- //       double totalReward = SimulateV(*state, Root);
+        //double totalReward = SimulateV(*state, Root);
         StatTotalReward.Add(totalReward);
         StatTreeDepth.Add(PeakTreeDepth);
 
+        //cout << "post SimulateV: " << endl;
+        //bag.Display(cout,Simulator);
+        
         if (Params.Verbose >= 2)
             cout << "Total reward = " << totalReward << endl;
         if (Params.Verbose >= 3)
@@ -217,7 +254,13 @@ void MCTS::UCTSearch()
 
         Simulator.FreeState(state);
         History.Truncate(historyDepth);
+        //bag.Free(Simulator);
     }
+
+
+    rootBelief.Free(Simulator);
+
+// Root->Bags().print_addedSample();
 
     DisplayStatistics(cout);
 }
@@ -291,10 +334,9 @@ double MCTS::SimulateV_rho(STATE& state, VNODE* vnode, BAG& bag)
     if (TreeDepth >= Params.MaxDepth) // search horizon reached
         return 0;
 
-    if (TreeDepth == 1){
+    if (TreeDepth == 1)
         AddSample(vnode, state);
-    }
-
+    
 
     QNODE& qnode = vnode->Child(action);
     double totalReward = SimulateQ_rho(state, qnode, action, bag);
@@ -310,21 +352,21 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag)
     double immediateReward, delayedReward = 0;
 
     //salvo lo stato precedente
-    STATE& previous_state = state;
+    STATE previous_state = state;
     double tmp =0;
 
     if (Simulator.HasAlpha())
         Simulator.UpdateAlpha(qnode, state);
     bool terminal = Simulator.Step(state, action, observation, immediateReward);
-
-
-
+    int obs = Simulator.observation(state, action);
    // bag.Display(std::cout,Simulator);
     //Simulator.DisplayState(state,std::cout);
-    //cout << "prima: " << immediateReward << endl;
-    int i = bag.ParticlePosition(state);
-    Simulator.Rho_reward(state,bag,immediateReward,i);
-    //cout << "dopo: " << immediateReward << endl;
+    //cout << "prima action: " << action << endl;
+    //int i = bag.ParticlePosition(state);
+   // bag.Display(std::cout,Simulator);
+   // immediateReward = Simulator.Rho_reward(state,bag,action);
+    //cout << "reward rho: " << r << endl;
+    //immediateReward+=r;
 
 
 
@@ -350,8 +392,23 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag)
     {
         TreeDepth++;
         if (vnode){
+        //    cout<< "display prima";
+          //  vnode->Bags().Display(cout,Simulator);
+          //  BAG beta = CreateBag_beta(vnode , previous_state,action, observation,tmp, bag, state);
             CreateBag(vnode , previous_state,action, observation,tmp, bag, state);
-           
+            //vnode->Bags().Move(beta,Simulator);
+            // immediateReward = Simulator.Rho_reward(state,beta,action);
+            // cout << "immediateReward: " << immediateReward << endl;
+            //beta.Display(cout,Simulator);
+            vnode->Bags().normalize();
+          //  cout << "display post createbag";
+          //  vnode->Bags().Display(cout,Simulator);s
+
+
+            //bag_haz.Free(Simulator);
+       //     cout << "bag after createbag:" << endl;
+        //    vnode->Bags().Display(cout,Simulator);
+
             delayedReward = SimulateV_rho(state, vnode, vnode->Bags());
         }
 
@@ -380,6 +437,9 @@ VNODE* MCTS::ExpandNode(const STATE* state)
 {
     VNODE* vnode = VNODE::Create();
     vnode->Value.Set(0, 0);
+ //   for(int j=0; j< NUM_PARTICLES; j++)
+ //       vnode->Bags().AddSample(Simulator.CreateStartState(), Simulator);
+
     Simulator.Prior(state, History, vnode, Status);
 
     if (Params.Verbose >= 2)
@@ -396,7 +456,7 @@ void MCTS::AddSample(VNODE* node, const STATE& state)
 {
     STATE* sample = Simulator.Copy(state);
     node->Beliefs().AddSample(sample);
-    if (Params.Verbose >= 2)
+    if (Params.Verbose >= 2)\
     {
         cout << "Adding sample:" << endl;
         Simulator.DisplayState(*sample, cout);
@@ -408,7 +468,7 @@ void MCTS::AddSample(VNODE* node, const STATE& state)
 void MCTS::AddSample_Bag(VNODE*& node, STATE& state, double peso)
 {
     STATE* sample = Simulator.Copy(state);
-    node->Bags().AddSample(sample,peso);
+    node->Bags().AddSample(sample,peso,Simulator);
     //node->Bags().normalize();
 
     if (Params.Verbose >= 2)
@@ -617,6 +677,9 @@ void MCTS::CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& o
 
     normalized_belief.normalize(); //equivalente in rhopomcp di:   Belief<S> belief = new Belief<>(previousBag);
 
+    //BAG result;
+
+
     double tmp =0;
 
 
@@ -625,7 +688,7 @@ void MCTS::CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& o
         // (1) sample a state s from βt
         STATE* state = normalized_belief.CreateSample(Simulator); //       S state = rootBelief.sample();
 
-        STATE* previous_state = state;
+        STATE previous_state = *state;
         int temp_obs = observation;
 
         //(2) sample a state s' by using the generative model, s' ∼ G(s, at)
@@ -633,33 +696,82 @@ void MCTS::CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& o
 
         //(3) store this particle s' in βt+1 with an associated weight of P (zt+1 |s, at , s')
         // corresponding to the probability of having generated observation zt+1.
-        double probability = Simulator.ProbObs(temp_obs,*previous_state,action, *state);
+        double probability = Simulator.ProbObs(temp_obs,previous_state,action, *state);
         if(probability >0){
+            //result.AddSample(state, probability,Simulator);
             AddSample_Bag(bag_successiva,*state,probability);
+        }else{
+          //  Simulator.FreeState(state);
+          //  Simulator.FreeState(&previous_state);
         }
 
     }
 
-    double probability = Simulator.ProbObs(observation,previous, action, next);
-    AddSample_Bag(bag_successiva, next,probability);
+}
 
-    if (bag_successiva->Bags().Empty())
-        cout << "no particles in the generated BAG" << endl;
+BAG MCTS::CreateBag_beta(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next){
+        BAG generatedBag;
+
+        BAG normalized_belief;
+        normalized_belief.Copy(bag ,Simulator);
+
+    normalized_belief.normalize(); //equivalente in rhopomcp di:   Belief<S> belief = new Belief<>(previousBag);
+    double tmp =0;
+    for (int i =0; i < NUM_PARTICLES; i++){
+        //simulate
+        STATE* state = normalized_belief.CreateSample(Simulator); //       S state = rootBelief.sample();
+        STATE previous_state = *state;
+        int temp_obs = observation;
+        Simulator.Step(*state, action, temp_obs, tmp);
+        double probability = Simulator.ProbObs(temp_obs,previous_state,action, *state);
+        if(probability >0){
+            generatedBag.AddSample(state,probability,Simulator);
+        }else{
+            Simulator.FreeState(state);
+            Simulator.FreeState(&previous_state);
+        }
 
     }
+    double probability = Simulator.ProbObs(observation,previous, action, next);
+    generatedBag.AddSample(&next,probability,Simulator);
+    if (generatedBag.Empty())
+        cout << "no particles in the generated BAG" << endl;
 
-void MCTS::generateInitialBag(STATE* state, const BAG& initialBelief, BAG& bag){
+    normalized_belief.Free(Simulator);
+    //STATE* state = normalized_belief.CreateSample(Simulator);
+    return generatedBag;
+    }
+
+BAG MCTS::generateInitialBag(STATE* state, BAG& initialBelief){
+
+    BAG bag;
+
     // add state s to the bag
-    bag.AddSample(state, 1.0);
+    bag.AddSample(state, 1.0,Simulator);
+    //initialBelief.AddSample(state, 1.0,Simulator);
 
 
+   // cout << "Initial belief" << endl;
+   // initialBelief.Display(cout,Simulator);
     // add sampled states from initialbelief (nbWished times)
     for (int i = 0; i < NUM_PARTICLES; i++) {
         STATE* sampledS = initialBelief.CreateSample(Simulator);
-        bag.AddSample(sampledS, 1.0);
+        bag.AddSample(sampledS, 1.0,Simulator);
     }  
-    bag.normalize(); 
+    return bag;
 }
+
+void MCTS::generateInitialBag_beta(STATE* state, BAG& initialBelief,BAG& result){
+    result.AddSample(state, 1.0,Simulator);
+
+    for (int i = 0; i < NUM_PARTICLES; i++) {
+        STATE* sampledS = initialBelief.CreateSample(Simulator);
+        result.AddSample(sampledS, 1.0,Simulator);
+    }  
+    result.normalize();
+}
+
+
 
 
 //-----------------------------------------------------------------------------

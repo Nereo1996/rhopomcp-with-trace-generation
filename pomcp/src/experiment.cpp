@@ -53,7 +53,8 @@ void EXPERIMENT::Run()
     STATE* state = Real.CreateStartState();
     if (SearchParams.Verbose >= 1)
         Real.DisplayState(*state, cout);
-    for (t = 0; t < ExpParams.NumSteps; t++)
+    //for (t = 0; t < ExpParams.NumSteps; t++)
+    for (t = 0; t < 10; t++)
     {
         //std::cout << "step numero :" << t << std::endl;
         int observation;
@@ -63,7 +64,7 @@ void EXPERIMENT::Run()
 
         std::cout << "azione migliore secondo la simulazione mcts:" << action << std::endl;
         terminal = Real.Step(*state, action, observation, reward);
-
+        //reward = Simulator.RhoReward(state, ,action);
         Results.Reward.Add(reward);
         undiscountedReturn += reward;
         discountedReturn += reward * discount;
