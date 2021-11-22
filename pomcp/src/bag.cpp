@@ -101,7 +101,7 @@
 
     void BAG::Copy(const BAG& particelle, const SIMULATOR& simulator){
 
-        //Free(simulator);
+        Free(simulator);
         const std::vector<STATE*>& iterator = particelle.GetBag_State();
         int count=0;
         for(std::vector<STATE*>::const_iterator i = iterator.begin(); i!=iterator.end();++i){
