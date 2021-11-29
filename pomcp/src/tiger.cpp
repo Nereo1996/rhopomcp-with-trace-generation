@@ -148,20 +148,12 @@ STATE* Tiger::CreateStartState() const
 	TigerState* tigerstate = MemoryPool.Allocate();
 
 	double r = ((double) rand() / (RAND_MAX));
-	//std::cout << r << std::endl;
+	std::bernoulli_distribution d(0.5);
 
-   //  std::bernoulli_distribution d(0.50);
-
-
-  	//std::default_random_engine generator;
-
-    //const int index = Random(100);
-
-	//std::cout << "Sei entrato in CreateStartState! ora proverai a fare Bernoulli.." << std::endl;
-
-	  //if(d(gen)){
-	if(r>=0.5){
-			tigerstate -> tiger_position = POS_RIGHT;
+     
+    if(d(gen)){
+	//if(r>=0.5){
+		tigerstate -> tiger_position = POS_RIGHT;
 	}
 	else{
 		tigerstate->tiger_position = POS_LEFT;

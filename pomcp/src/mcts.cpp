@@ -50,8 +50,6 @@ TreeDepth(0)
     for (int i = 0; i < Params.NumStartStates; i++)
         Root->Beliefs().AddSample(Simulator.CreateStartState());
 
-
-
     //cout << "belief iniziale" << endl;
     //Simulator.DisplayBeliefs(Root->Beliefs(),std::cout);
 
@@ -64,10 +62,10 @@ TreeDepth(0)
  //   Root->Bags().print_addedSample(); 
 
 
-    Root->Bags().normalize();
+    //Root->Bags().normalize();
     //stampo a video la bag
     //cout << "bag iniziale" << endl;
-   // Root->Bags().Display(std::cout, Simulator);
+    //Root->Bags().Display(std::cout, Simulator);
 
 }
 
@@ -127,12 +125,13 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
 
     VNODE* newRoot = ExpandNode(state);
     newRoot->Beliefs() = beliefs;
-    bag.normalize();
+    //bag.normalize();
+   // bag.Display(cout,Simulator);
     newRoot->Bags() = bag;
 
     Root = newRoot;
 
-    bag.Free(Simulator);
+   // bag.Free(Simulator);
 
     if(PRINT_VALUES){
         cout << "bag dopo aver fatto un passo" << endl;
@@ -155,42 +154,6 @@ int MCTS::SelectAction()
     return GreedyUCB(Root, false);
 }
 
-void MCTS::RolloutSearch()
-{
-
- std::vector<double> totals(Simulator.GetNumActions(), 0.0);
- int historyDepth = History.Size();
- std::vector<int> legal;
- assert(BeliefState().GetNumSamples() > 0);
- Simulator.GenerateLegal(*BeliefState().GetSample(0), GetHistory(), legal, GetStatus());
- random_shuffle(legal.begin(), legal.end());
-
- for (int i = 0; i < Params.NumSimulations; i++)
- {
-  int action = legal[i % legal.size()];
-  STATE* state = Root->Beliefs().CreateSample(Simulator);
-  Simulator.Validate(*state);
-
-  int observation;
-  double immediateReward, delayedReward, totalReward;
-  bool terminal = Simulator.Step(*state, action, observation, immediateReward);
-
-  VNODE*& vnode = Root->Child(action).Child(observation);
-  if (!vnode && !terminal)
-  {
-   vnode = ExpandNode(state);
-   AddSample(vnode, *state);
-}
-History.Add(action, observation);
-
-delayedReward = Rollout(*state);
-totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
-Root->Child(action).Value.Add(totalReward);
-
-Simulator.FreeState(state);
-History.Truncate(historyDepth);
-}
-}
 
 void MCTS::UCTSearch()
 {
@@ -199,24 +162,12 @@ void MCTS::UCTSearch()
     //SEARCH IN RHOPOMCP :  // create a belief from root particles: Belief<S> rootBelief = new Belief<>(root.getBag());
     BAG rootBelief= Root->Bags();
 
-    //rootBelief.Copy(Root->Bags() ,Simulator);
-
-    //rootBelief.normalize(); //equivalente in rhopomcp di:  Belief<S> rootBelief = new Belief<>(root.getBag());
-    
-//     for(int j=0; j< NUM_PARTICLES; j++)
-//        Root->Bags().AddSample(Simulator.CreateStartState(), Simulator);
-
-    //Root->Bags().normalize();
-
-
     for (int n = 0; n < Params.NumSimulations; n++)    
     {
+
         //OneDescent(rootBelief) 
         STATE* state = Root->Beliefs().CreateSample(Simulator);
         //STATE* state = rootBelief.CreateSample(Simulator);
-
-      //  STATE* s = rootBelief.CreateSample(Simulator); // == S state = rootBelief.sample();
-       // STATE* s = rootBelief.CreateSample(Simulator); // == S state = rootBelief.sample()
 
         Simulator.Validate(*state);
         Status.Phase = SIMULATOR::STATUS::TREE;
@@ -228,24 +179,19 @@ void MCTS::UCTSearch()
 
         TreeDepth = 0;
         PeakTreeDepth = 0;
-
+        //rootBelief.Display(cout,Simulator);
         // generate initial bag (WITH initial state)
          //Bag<S> bag = this.generatorB.generateInitialBag(state, rootBelief);
-        //BAG bag = generateInitialBag(state,rootBelief);
         BAG bag = generateInitialBag(state,rootBelief);
-      //  BAG bag;
-      //  generateInitialBag_beta(state,rootBelief,bag);
-      //  cout << "initial bag:" << endl;
+
       //  bag.Display(cout,Simulator);
 
+
         double totalReward = SimulateV_rho(*state, Root, bag);
-        //double totalReward = SimulateV(*state, Root);
+//        double totalReward = SimulateV(*state, Root);
         StatTotalReward.Add(totalReward);
         StatTreeDepth.Add(PeakTreeDepth);
 
-        //cout << "post SimulateV: " << endl;
-        //bag.Display(cout,Simulator);
-        
         if (Params.Verbose >= 2)
             cout << "Total reward = " << totalReward << endl;
         if (Params.Verbose >= 3)
@@ -256,71 +202,7 @@ void MCTS::UCTSearch()
         //bag.Free(Simulator);
     }
 
-
-    rootBelief.Free(Simulator);
-
-// Root->Bags().print_addedSample();
-
     DisplayStatistics(cout);
-}
-
-double MCTS::SimulateV(STATE& state, VNODE* vnode)
-{
-    int action = GreedyUCB(vnode, true);
-
-    PeakTreeDepth = TreeDepth;
-    if (TreeDepth >= Params.MaxDepth) // search horizon reached
-        return 0;
-
-    if (TreeDepth == 1)
-        AddSample(vnode, state);
-
-    QNODE& qnode = vnode->Child(action);
-    double totalReward = SimulateQ(state, qnode, action);
-    vnode->Value.Add(totalReward);
-    AddRave(vnode, totalReward);
-    return totalReward;
-}
-
-double MCTS::SimulateQ(STATE& state, QNODE& qnode, int action)
-{
-
-    int observation;
-    double immediateReward, delayedReward = 0;
-
-    if (Simulator.HasAlpha())
-        Simulator.UpdateAlpha(qnode, state);
-    bool terminal = Simulator.Step(state, action, observation, immediateReward);
-    assert(observation >= 0 && observation < Simulator.GetNumObservations());
-
-    History.Add(action, observation);
-
-    if (Params.Verbose >= 3)
-    {
-        Simulator.DisplayAction(action, cout);
-        Simulator.DisplayObservation(state, observation, cout);
-        Simulator.DisplayReward(immediateReward, cout);
-        Simulator.DisplayState(state, cout);
-    }
-
-    VNODE*& vnode = qnode.Child(observation);
-
-    if (!vnode && !terminal && qnode.Value.GetCount() >= Params.ExpandCount)
-        vnode = ExpandNode(&state);
-
-    if (!terminal)
-    {
-        TreeDepth++;
-        if (vnode)
-            delayedReward = SimulateV(state, vnode);
-        else
-            delayedReward = Rollout(state);
-        TreeDepth--;
-    }
-
-    double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
-    qnode.Value.Add(totalReward);
-    return totalReward;
 }
 
 
@@ -352,25 +234,12 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag)
 
     //salvo lo stato precedente
     STATE previous_state = state;
-    double tmp =0;
 
     if (Simulator.HasAlpha())
         Simulator.UpdateAlpha(qnode, state);
     bool terminal = Simulator.Step(state, action, observation, immediateReward);
-
-  //  cout <<"terminal " << terminal << endl;
-    int obs = Simulator.observation(state, action);
-   // bag.Display(std::cout,Simulator);
-    //Simulator.DisplayState(state,std::cout);
-    //cout << "prima action: " << action << endl;
-    //int i = bag.ParticlePosition(state);
-   // bag.Display(std::cout,Simulator);
-   // immediateReward = Simulator.Rho_reward(state,bag,action);
-    //cout << "reward rho: " << r << endl;
-    //immediateReward+=r;
-
-
-
+    //immediateReward = Simulator.Rho_reward(state, bag, action);
+    cout << immediateReward << endl;
     assert(observation >= 0 && observation < Simulator.GetNumObservations());
     History.Add(action, observation);
 
@@ -389,30 +258,13 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag)
     if (!vnode && !terminal && qnode.Value.GetCount() >= Params.ExpandCount)
         vnode = ExpandNode(&state);
 
+    BAG beta = CreateBag_beta(previous_state,action, observation, bag, state);
+    //beta.Display(cout,Simulator);
     if (!terminal)
     {
         TreeDepth++;
         if (vnode){
-        //    cout << "numero samples : " << vnode->Bags().GetNumSamples() << endl;
-            BAG beta = CreateBag_beta(vnode , previous_state,action, observation,tmp, bag, state);
-
-            CreateBag(vnode , previous_state,action, observation,tmp, bag, state);
-
-      //      cout << "counter post createbag " << endl;
-      //      Root->Bags().print_addedSample();
-            //vnode->Bags().Move(beta,Simulator);
-            // immediateReward = Simulator.Rho_reward(state,beta,action);
-            // cout << "immediateReward: " << immediateReward << endl;
-            //beta.Display(cout,Simulator);
-            vnode->Bags().normalize();
-          //  cout << "display post createbag";
-          //  vnode->Bags().Display(cout,Simulator);s
-
-
-            //bag_haz.Free(Simulator);
-       //     cout << "bag after createbag:" << endl;
-        //    vnode->Bags().Display(cout,Simulator);
-
+            vnode->Bags().AddSample(beta,Simulator);
             delayedReward = SimulateV_rho(state, vnode, beta);
         }
 
@@ -426,279 +278,22 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag)
     return totalReward;
 }
 
-void MCTS::AddRave(VNODE* vnode, double totalReward)
-{
-    double totalDiscount = 1.0;
-    for (int t = TreeDepth; t < History.Size(); ++t)
-    {
-        QNODE& qnode = vnode->Child(History[t].Action);
-        qnode.AMAF.Add(totalReward, totalDiscount);
-        totalDiscount *= Params.RaveDiscount;
-    }
-}
-
-VNODE* MCTS::ExpandNode(const STATE* state)
-{
-    VNODE* vnode = VNODE::Create();
-    vnode->Value.Set(0, 0);
- //   for(int j=0; j< NUM_PARTICLES; j++)
- //       vnode->Bags().AddSample(Simulator.CreateStartState(), Simulator);
-
-    Simulator.Prior(state, History, vnode, Status);
-
-    if (Params.Verbose >= 2)
-    {
-        cout << "Expanding node: ";
-        History.Display(cout);
-        cout << endl;
-    }
-
-    return vnode;
-}
-
-void MCTS::AddSample(VNODE* node, const STATE& state)
-{
-    STATE* sample = Simulator.Copy(state);
-    node->Beliefs().AddSample(sample);
-    if (Params.Verbose >= 2)\
-    {
-        cout << "Adding sample:" << endl;
-        Simulator.DisplayState(*sample, cout);
-    }
-
-}
-
-
-void MCTS::AddSample_Bag(VNODE*& node, STATE& state, double peso)
-{
-    STATE* sample = Simulator.Copy(state);
-    node->Bags().AddSample(sample,peso,Simulator);
-    //node->Bags().normalize();
-
-    if (Params.Verbose >= 2)
-    {
-        cout << "Adding sample to bag:" << endl;
-        Simulator.DisplayState(*sample, cout);
-    }
-}
-
-
-int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const
-{
-    static vector<int> besta;
-    besta.clear();
-    double bestq = -Infinity;
-    int N = vnode->Value.GetCount();
-    double logN = log(N + 1);
-    bool hasalpha = Simulator.HasAlpha();
-
-    for (int action = 0; action < Simulator.GetNumActions(); action++)
-    {
-        double q, alphaq;
-        int n, alphan;
-
-        QNODE& qnode = vnode->Child(action);
-        q = qnode.Value.GetValue();
-        n = qnode.Value.GetCount();
-
-        if (Params.UseRave && qnode.AMAF.GetCount() > 0)
-        {
-            double n2 = qnode.AMAF.GetCount();
-            double beta = n2 / (n + n2 + Params.RaveConstant * n * n2);
-            q = (1.0 - beta) * q + beta * qnode.AMAF.GetValue();
-        }
-
-        if (hasalpha && n > 0)
-        {
-            Simulator.AlphaValue(qnode, alphaq, alphan);
-            q = (n * q + alphan * alphaq) / (n + alphan);
-            //cout << "N = " << n << ", alphaN = " << alphan << endl;
-            //cout << "Q = " << q << ", alphaQ = " << alphaq << endl;
-        }
-
-        if (ucb)
-            q += FastUCB(N, n, logN);
-
-        if (q >= bestq)
-        {
-            if (q > bestq)
-                besta.clear();
-            bestq = q;
-            besta.push_back(action);
-        }
-    }
-
-    assert(!besta.empty());
-    return besta[Random(besta.size())];
-}
-
-double MCTS::Rollout(STATE& state)
-{
-    Status.Phase = SIMULATOR::STATUS::ROLLOUT;
-    if (Params.Verbose >= 3)
-        cout << "Starting rollout" << endl;
-
-    double totalReward = 0.0;
-    double discount = 1.0;
-    bool terminal = false;
-    int numSteps;
-    for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal; ++numSteps)
-    {
-        int observation;
-        double reward;
-
-        int action = Simulator.SelectRandom(state, History, Status);
-        terminal = Simulator.Step(state, action, observation, reward);
-        History.Add(action, observation);
-
-        if (Params.Verbose >= 4)
-        {
-            Simulator.DisplayAction(action, cout);
-            Simulator.DisplayObservation(state, observation, cout);
-            Simulator.DisplayReward(reward, cout);
-            Simulator.DisplayState(state, cout);
-        }
-
-        totalReward += reward * discount;
-        discount *= Simulator.GetDiscount();
-    }
-
-    StatRolloutDepth.Add(numSteps);
-    if (Params.Verbose >= 3)
-        cout << "Ending rollout after " << numSteps
-    << " steps, with total reward " << totalReward << endl;
-    return totalReward;
-}
-
-void MCTS::AddTransforms(VNODE* root, BELIEF_STATE& beliefs)
-{
-    int attempts = 0, added = 0;
-
-    // Local transformations of state that are consistent with history
-    while (added < Params.NumTransforms && attempts < Params.MaxAttempts)
-    {
-        STATE* transform = CreateTransform();
-        if (transform)
-        {
-            beliefs.AddSample(transform);
-            added++;
-        }
-        attempts++;
-    }
-
-    if (Params.Verbose >= 1)
-    {
-        cout << "Created " << added << " local transformations out of "
-        << attempts << " attempts" << endl;
-    }
-}
-
-STATE* MCTS::CreateTransform() const
-{
-    int stepObs;
-    double stepReward;
-
-    STATE* state = Root->Beliefs().CreateSample(Simulator);
-    Simulator.Step(*state, History.Back().Action, stepObs, stepReward);
-    if (Simulator.LocalMove(*state, History, stepObs, Status))
-        return state;
-    Simulator.FreeState(state);
-    return 0;
-}
-
-double MCTS::UCB[UCB_N][UCB_n];
-bool MCTS::InitialisedFastUCB = true;
-
-void MCTS::InitFastUCB(double exploration)
-{
-    cout << "Initialising fast UCB table... ";
-    for (int N = 0; N < UCB_N; ++N)
-        for (int n = 0; n < UCB_n; ++n)
-            if (n == 0)
-                UCB[N][n] = Infinity;
-            else
-                UCB[N][n] = exploration * sqrt(log(N + 1) / n);
-    cout << "done" << endl;
-    InitialisedFastUCB = true;
-}
-
-inline double MCTS::FastUCB(int N, int n, double logN) const
-{
-    if (InitialisedFastUCB && N < UCB_N && n < UCB_n)
-        return UCB[N][n];
-
-    if (n == 0)
-        return Infinity;
-    else
-        return Params.ExplorationConstant * sqrt(logN / n);
-}
-
-void MCTS::ClearStatistics()
-{
-    StatTreeDepth.Clear();
-    StatRolloutDepth.Clear();
-    StatTotalReward.Clear();
-}
-
-void MCTS::DisplayStatistics(ostream& ostr) const
-{
-    if (Params.Verbose >= 1)
-    {
-        StatTreeDepth.Print("Tree depth", ostr);
-        StatRolloutDepth.Print("Rollout depth", ostr);
-        StatTotalReward.Print("Total reward", ostr);
-    }
-
-    if (Params.Verbose >= 2)
-    {
-        ostr << "Policy after " << Params.NumSimulations << " simulations" << endl;
-        DisplayPolicy(6, ostr);
-        ostr << "Values after " << Params.NumSimulations << " simulations" << endl;
-        DisplayValue(6, ostr);
-    }
-}
-
-void MCTS::DisplayValue(int depth, ostream& ostr) const
-{
-    HISTORY history;
-    ostr << "MCTS Values:" << endl;
-    Root->DisplayValue(history, depth, ostr);
-}
-
-void MCTS::DisplayPolicy(int depth, ostream& ostr) const
-{
-    HISTORY history;
-    ostr << "MCTS Policy:" << endl;
-    Root->DisplayPolicy(history, depth, ostr);
-}
 
 
 void MCTS::CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next){
-    // BAG generatedBag;
 
     BAG normalized_belief = bag;
-   // normalized_belief.Copy(bag ,Simulator);
-
-
     normalized_belief.normalize(); //equivalente in rhopomcp di:   Belief<S> belief = new Belief<>(previousBag);
-
-    //BAG result;
-
-
     double tmp =0;
-
 
     for (int i =0; i < NUM_PARTICLES; i++){
         //simulate
         // (1) sample a state s from βt
         STATE* state = normalized_belief.CreateSample(Simulator); //       S state = rootBelief.sample();
-
         STATE previous_state = *state;
         int temp_obs = observation;
-
         //(2) sample a state s' by using the generative model, s' ∼ G(s, at)
         Simulator.Step(*state, action, temp_obs, tmp);
-
         //(3) store this particle s' in βt+1 with an associated weight of P (zt+1 |s, at , s')
         // corresponding to the probability of having generated observation zt+1.
         double probability = Simulator.ProbObs(temp_obs,previous_state,action, *state);
@@ -706,29 +301,30 @@ void MCTS::CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& o
             //result.AddSample(state, probability,Simulator);
             AddSample_Bag(bag_successiva,*state,probability);
         }else{
-          //  Simulator.FreeState(state);
-          //  Simulator.FreeState(&previous_state);
+            Simulator.FreeState(state);
+            Simulator.FreeState(&previous_state);
         }
 
     }
 
 }
 
-BAG MCTS::CreateBag_beta(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next){
-        BAG generatedBag;
-
-        BAG normalized_belief = bag;
-        //normalized_belief.Copy(bag ,Simulator);
+BAG MCTS::CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag, STATE& next){
+ 
+    BAG generatedBag;
+    BAG normalized_belief = bag;
 
     normalized_belief.normalize(); //equivalente in rhopomcp di:   Belief<S> belief = new Belief<>(previousBag);
     double tmp =0;
+    int temp_obs = 0;
+ 
     for (int i =0; i < NUM_PARTICLES; i++){
         //simulate
         STATE* state = normalized_belief.CreateSample(Simulator); //       S state = rootBelief.sample();
         STATE previous_state = *state;
-        int temp_obs = observation;
         Simulator.Step(*state, action, temp_obs, tmp);
         double probability = Simulator.ProbObs(temp_obs,previous_state,action, *state);
+        //cout << probability << endl;
         if(probability >0){
             generatedBag.AddSample(state,probability,Simulator);
         }else{
@@ -737,43 +333,54 @@ BAG MCTS::CreateBag_beta(VNODE*& bag_successiva, STATE& previous, int action, in
         }
 
     }
+ 
     double probability = Simulator.ProbObs(observation,previous, action, next);
+ 
     generatedBag.AddSample(&next,probability,Simulator);
+ 
     if (generatedBag.Empty())
         cout << "no particles in the generated BAG" << endl;
 
-    normalized_belief.Free(Simulator);
-    //STATE* state = normalized_belief.CreateSample(Simulator);
     return generatedBag;
-    }
+}
 
 BAG MCTS::generateInitialBag(STATE* state, BAG& initialBelief){
 
+ 
     BAG bag;
+    BAG supporto = initialBelief;
+    supporto.normalize();
 
     // add state s to the bag
     bag.AddSample(state, 1.0,Simulator);
-    //initialBelief.AddSample(state, 1.0,Simulator);
-
-
-   // cout << "Initial belief" << endl;
-   // initialBelief.Display(cout,Simulator);
     // add sampled states from initialbelief (nbWished times)
     for (int i = 0; i < NUM_PARTICLES; i++) {
-        STATE* sampledS = initialBelief.CreateSample(Simulator);
+        STATE* sampledS = supporto.CreateSample(Simulator);
         bag.AddSample(sampledS, 1.0,Simulator);
     }  
+
+
+/*
+    cout << "\n----" << endl;
+    supporto.Display(cout,Simulator);
+    cout <<  "**" << endl;
+    bag.Display(cout,Simulator);
+    cout << "----" << endl;
+*/
+
     return bag;
 }
 
 void MCTS::generateInitialBag_beta(STATE* state, BAG& initialBelief,BAG& result){
     result.AddSample(state, 1.0,Simulator);
+    BAG supporto = initialBelief;
+    supporto.normalize();
 
     for (int i = 0; i < NUM_PARTICLES; i++) {
-        STATE* sampledS = initialBelief.CreateSample(Simulator);
+        STATE* sampledS = supporto.CreateSample(Simulator);
         result.AddSample(sampledS, 1.0,Simulator);
     }  
-    result.normalize();
+    //result.normalize();
 }
 
 
@@ -888,3 +495,343 @@ void MCTS::UnitTestUCB()
                 }
 
 //-----------------------------------------------------------------------------
+
+
+
+double MCTS::SimulateV(STATE& state, VNODE* vnode)
+{
+    int action = GreedyUCB(vnode, true);
+
+    PeakTreeDepth = TreeDepth;
+    if (TreeDepth >= Params.MaxDepth) // search horizon reached
+        return 0;
+
+    if (TreeDepth == 1)
+        AddSample(vnode, state);
+
+    QNODE& qnode = vnode->Child(action);
+    double totalReward = SimulateQ(state, qnode, action);
+    vnode->Value.Add(totalReward);
+    AddRave(vnode, totalReward);
+    return totalReward;
+}
+
+double MCTS::SimulateQ(STATE& state, QNODE& qnode, int action)
+{
+
+    int observation;
+    double immediateReward, delayedReward = 0;
+
+    if (Simulator.HasAlpha())
+        Simulator.UpdateAlpha(qnode, state);
+    bool terminal = Simulator.Step(state, action, observation, immediateReward);
+    assert(observation >= 0 && observation < Simulator.GetNumObservations());
+
+    History.Add(action, observation);
+
+    if (Params.Verbose >= 3)
+    {
+        Simulator.DisplayAction(action, cout);
+        Simulator.DisplayObservation(state, observation, cout);
+        Simulator.DisplayReward(immediateReward, cout);
+        Simulator.DisplayState(state, cout);
+    }
+
+    VNODE*& vnode = qnode.Child(observation);
+
+    if (!vnode && !terminal && qnode.Value.GetCount() >= Params.ExpandCount)
+        vnode = ExpandNode(&state);
+
+    if (!terminal)
+    {
+        TreeDepth++;
+        if (vnode)
+            delayedReward = SimulateV(state, vnode);
+        else
+            delayedReward = Rollout(state);
+        TreeDepth--;
+    }
+
+    double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
+    qnode.Value.Add(totalReward);
+    return totalReward;
+}
+
+
+void MCTS::DisplayValue(int depth, ostream& ostr) const
+{
+    HISTORY history;
+    ostr << "MCTS Values:" << endl;
+    Root->DisplayValue(history, depth, ostr);
+}
+
+void MCTS::DisplayPolicy(int depth, ostream& ostr) const
+{
+    HISTORY history;
+    ostr << "MCTS Policy:" << endl;
+    Root->DisplayPolicy(history, depth, ostr);
+}
+
+void MCTS::ClearStatistics()
+{
+    StatTreeDepth.Clear();
+    StatRolloutDepth.Clear();
+    StatTotalReward.Clear();
+}
+
+void MCTS::DisplayStatistics(ostream& ostr) const
+{
+    if (Params.Verbose >= 1)
+    {
+        StatTreeDepth.Print("Tree depth", ostr);
+        StatRolloutDepth.Print("Rollout depth", ostr);
+        StatTotalReward.Print("Total reward", ostr);
+    }
+
+    if (Params.Verbose >= 2)
+    {
+        ostr << "Policy after " << Params.NumSimulations << " simulations" << endl;
+        DisplayPolicy(6, ostr);
+        ostr << "Values after " << Params.NumSimulations << " simulations" << endl;
+        DisplayValue(6, ostr);
+    }
+}
+
+void MCTS::AddTransforms(VNODE* root, BELIEF_STATE& beliefs)
+{
+    int attempts = 0, added = 0;
+
+    // Local transformations of state that are consistent with history
+    while (added < Params.NumTransforms && attempts < Params.MaxAttempts)
+    {
+        STATE* transform = CreateTransform();
+        if (transform)
+        {
+            beliefs.AddSample(transform);
+            added++;
+        }
+        attempts++;
+    }
+
+    if (Params.Verbose >= 1)
+    {
+        cout << "Created " << added << " local transformations out of "
+        << attempts << " attempts" << endl;
+    }
+}
+
+STATE* MCTS::CreateTransform() const
+{
+    int stepObs;
+    double stepReward;
+
+    STATE* state = Root->Beliefs().CreateSample(Simulator);
+    Simulator.Step(*state, History.Back().Action, stepObs, stepReward);
+    if (Simulator.LocalMove(*state, History, stepObs, Status))
+        return state;
+    Simulator.FreeState(state);
+    return 0;
+}
+
+double MCTS::UCB[UCB_N][UCB_n];
+bool MCTS::InitialisedFastUCB = true;
+
+void MCTS::InitFastUCB(double exploration)
+{
+    cout << "Initialising fast UCB table... ";
+    for (int N = 0; N < UCB_N; ++N)
+        for (int n = 0; n < UCB_n; ++n)
+            if (n == 0)
+                UCB[N][n] = Infinity;
+            else
+                UCB[N][n] = exploration * sqrt(log(N + 1) / n);
+    cout << "done" << endl;
+    InitialisedFastUCB = true;
+}
+
+inline double MCTS::FastUCB(int N, int n, double logN) const
+{
+    if (InitialisedFastUCB && N < UCB_N && n < UCB_n)
+        return UCB[N][n];
+
+    if (n == 0)
+        return Infinity;
+    else
+        return Params.ExplorationConstant * sqrt(logN / n);
+}
+
+void MCTS::AddRave(VNODE* vnode, double totalReward)
+{
+    double totalDiscount = 1.0;
+    for (int t = TreeDepth; t < History.Size(); ++t)
+    {
+        QNODE& qnode = vnode->Child(History[t].Action);
+        qnode.AMAF.Add(totalReward, totalDiscount);
+        totalDiscount *= Params.RaveDiscount;
+    }
+}
+
+VNODE* MCTS::ExpandNode(const STATE* state)
+{
+    VNODE* vnode = VNODE::Create();
+    vnode->Value.Set(0, 0);
+    Simulator.Prior(state, History, vnode, Status);
+
+    if (Params.Verbose >= 2)
+    {
+        cout << "Expanding node: ";
+        History.Display(cout);
+        cout << endl;
+    }
+
+    return vnode;
+}
+
+void MCTS::AddSample(VNODE* node, const STATE& state)
+{
+    STATE* sample = Simulator.Copy(state);
+    node->Beliefs().AddSample(sample);
+    if (Params.Verbose >= 2)\
+    {
+        cout << "Adding sample:" << endl;
+        Simulator.DisplayState(*sample, cout);
+    }
+
+}
+
+void MCTS::AddSample_Bag(VNODE*& node, STATE& state, double peso)
+{
+    STATE* sample = Simulator.Copy(state);
+    node->Bags().AddSample(sample,peso,Simulator);
+    //node->Bags().normalize();
+
+    if (Params.Verbose >= 2)
+    {
+        cout << "Adding sample to bag:" << endl;
+        Simulator.DisplayState(*sample, cout);
+    }
+}
+
+
+int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const
+{
+    static vector<int> besta;
+    besta.clear();
+    double bestq = -Infinity;
+    int N = vnode->Value.GetCount();
+    double logN = log(N + 1);
+    bool hasalpha = Simulator.HasAlpha();
+
+    for (int action = 0; action < Simulator.GetNumActions(); action++)
+    {
+        double q, alphaq;
+        int n, alphan;
+
+        QNODE& qnode = vnode->Child(action);
+        q = qnode.Value.GetValue();
+        n = qnode.Value.GetCount();
+
+        if (Params.UseRave && qnode.AMAF.GetCount() > 0)
+        {
+            double n2 = qnode.AMAF.GetCount();
+            double beta = n2 / (n + n2 + Params.RaveConstant * n * n2);
+            q = (1.0 - beta) * q + beta * qnode.AMAF.GetValue();
+        }
+
+        if (hasalpha && n > 0)
+        {
+            Simulator.AlphaValue(qnode, alphaq, alphan);
+            q = (n * q + alphan * alphaq) / (n + alphan);
+            //cout << "N = " << n << ", alphaN = " << alphan << endl;
+            //cout << "Q = " << q << ", alphaQ = " << alphaq << endl;
+        }
+
+        if (ucb)
+            q += FastUCB(N, n, logN);
+
+        if (q >= bestq)
+        {
+            if (q > bestq)
+                besta.clear();
+            bestq = q;
+            besta.push_back(action);
+        }
+    }
+
+    assert(!besta.empty());
+    return besta[Random(besta.size())];
+}
+
+double MCTS::Rollout(STATE& state)
+{
+    Status.Phase = SIMULATOR::STATUS::ROLLOUT;
+    if (Params.Verbose >= 3)
+        cout << "Starting rollout" << endl;
+
+    double totalReward = 0.0;
+    double discount = 1.0;
+    bool terminal = false;
+    int numSteps;
+    for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal; ++numSteps)
+    {
+        int observation;
+        double reward;
+
+        int action = Simulator.SelectRandom(state, History, Status);
+        terminal = Simulator.Step(state, action, observation, reward);
+        History.Add(action, observation);
+
+        if (Params.Verbose >= 4)
+        {
+            Simulator.DisplayAction(action, cout);
+            Simulator.DisplayObservation(state, observation, cout);
+            Simulator.DisplayReward(reward, cout);
+            Simulator.DisplayState(state, cout);
+        }
+
+        totalReward += reward * discount;
+        discount *= Simulator.GetDiscount();
+    }
+
+    StatRolloutDepth.Add(numSteps);
+    if (Params.Verbose >= 3)
+        cout << "Ending rollout after " << numSteps
+    << " steps, with total reward " << totalReward << endl;
+    return totalReward;
+}
+
+void MCTS::RolloutSearch()
+{
+
+ std::vector<double> totals(Simulator.GetNumActions(), 0.0);
+ int historyDepth = History.Size();
+ std::vector<int> legal;
+ assert(BeliefState().GetNumSamples() > 0);
+ Simulator.GenerateLegal(*BeliefState().GetSample(0), GetHistory(), legal, GetStatus());
+ random_shuffle(legal.begin(), legal.end());
+
+ for (int i = 0; i < Params.NumSimulations; i++){
+      int action = legal[i % legal.size()];
+      STATE* state = Root->Beliefs().CreateSample(Simulator);
+      Simulator.Validate(*state);
+
+      int observation;
+      double immediateReward, delayedReward, totalReward;
+      bool terminal = Simulator.Step(*state, action, observation, immediateReward);
+
+      VNODE*& vnode = Root->Child(action).Child(observation);
+      if (!vnode && !terminal)
+      {
+           vnode = ExpandNode(state);
+           AddSample(vnode, *state);
+      }   
+        History.Add(action, observation);
+
+        delayedReward = Rollout(*state);
+        totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
+        Root->Child(action).Value.Add(totalReward);
+
+        Simulator.FreeState(state);
+        History.Truncate(historyDepth);
+    }
+}

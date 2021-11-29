@@ -31,6 +31,9 @@ public:
     //aggiunge uno stato alla bag di particle
     void AddSample(STATE* particle, double peso, const SIMULATOR& simulator);
 
+    //aggiunge una bag alla cumulative BAG
+    void AddSample(BAG& beta, const SIMULATOR& simulator);
+
 
     //copia un'intera bag
     void Copy(const BAG& particelle, const SIMULATOR& simulator);
@@ -62,6 +65,7 @@ public:
     const std::vector<double>& GetBag_Weight() const {return weight;}
     std::vector<double>& GetBag_Weight() {return weight;}
 
+
     //normalizza i pesi
     void normalize();
 
@@ -75,6 +79,8 @@ private:
 
     std::vector<STATE*> Particles;
     std::vector<double> weight;
+
+    bool normalized;
 };
 
 #endif // BAG_H

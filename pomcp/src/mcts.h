@@ -79,7 +79,7 @@ private:
     //for bag
     //void CreateBag(VNODE*& bag_successiva, int action, int& observation, double& immediateReward, BAG& bag);
     void CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next);
-    BAG CreateBag_beta(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next);
+    BAG CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag, STATE& next);
     double SimulateV_rho(STATE& state, VNODE* vnode, BAG& bag);
     double SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag);
     void AddSample_Bag(VNODE*& node, STATE& state, double peso);

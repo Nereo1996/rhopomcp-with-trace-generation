@@ -8,13 +8,13 @@
     
     static int counter =0;
     //corretto
-    BAG::BAG(){ Particles.clear(); weight.clear();}
+    BAG::BAG(){ Particles.clear(); weight.clear(); normalized = false;}
 
 
     void BAG::Free(const SIMULATOR& simulator){ 
 
         for (std::vector<STATE*>::iterator i_state = Particles.begin(); i_state != Particles.end(); ++i_state){
-            simulator.FreeState(*i_state);
+            //simulator.FreeState(*i_state);
             counter--;
         }
 
@@ -47,7 +47,7 @@
             if( Particles[i]->isEqual(particle)){
                 flag = false;
                 weight[i] = weight[i]+peso;
-                simulator.FreeState(particle);
+               // simulator.FreeState(particle);
                 break;
             }
         }
@@ -69,7 +69,7 @@
             if( Particles[i]->isEqual(particle)){
                 flag = false;
                 weight[i]= weight[i]+1.0;
-                simulator.FreeState(particle);
+               // simulator.FreeState(particle);
                 break;
             }
 
@@ -83,6 +83,37 @@
         }
 
     }
+
+
+    void BAG::AddSample(BAG& beta, const SIMULATOR& simulator){
+        bool flag = true;
+
+
+        for(int i =0;i < beta.GetNumSamples(); i++){
+
+            for(int j = 0; j < Particles.size();++j){
+
+                if(Particles[j]->isEqual(beta.GetSample(i))){
+                    flag = false;
+                    weight[j]= weight[j]+beta.GetWeight(i);
+                }
+
+
+            }
+            if(flag){
+                STATE* support = const_cast <STATE*> (beta.GetSample(i));
+                //const STATE* support = beta.GetSample(i);
+                Particles.push_back(support);
+                weight.push_back(beta.GetWeight(i));
+            } else{
+                flag = true;
+            }
+
+
+        }
+
+    }
+
 
 
     bool BAG::checkParticle(STATE* newstate){
