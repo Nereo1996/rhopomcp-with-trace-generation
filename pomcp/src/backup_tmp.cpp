@@ -1691,3 +1691,54 @@ void MCTS::UnitTestUCB()
                 }
 
 //-----------------------------------------------------------------------------
+
+
+
+
+
+/*
+void MCTS::CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next){
+
+    BAG normalized_belief = bag;
+    normalized_belief.normalize(); //equivalente in rhopomcp di:   Belief<S> belief = new Belief<>(previousBag);
+    double tmp =0;
+
+    for (int i =0; i < NUM_PARTICLES; i++){
+        //simulate
+        // (1) sample a state s from βt
+        STATE* state = normalized_belief.CreateSample(Simulator); //       S state = rootBelief.sample();
+        STATE previous_state = *state;
+        int temp_obs = observation;
+        //(2) sample a state s' by using the generative model, s' ∼ G(s, at)
+        Simulator.Step(*state, action, temp_obs, tmp);
+        //(3) store this particle s' in βt+1 with an associated weight of P (zt+1 |s, at , s')
+        // corresponding to the probability of having generated observation zt+1.
+        double probability = Simulator.ProbObs(temp_obs,previous_state,action, *state);
+        if(probability >0){
+            //result.AddSample(state, probability,Simulator);
+            AddSample_Bag(bag_successiva,*state,probability);
+        }else{
+            Simulator.FreeState(state);
+            Simulator.FreeState(&previous_state);
+        }
+
+    }
+
+}
+
+
+
+void MCTS::generateInitialBag_beta(STATE* state, BAG& initialBelief,BAG& result){
+    result.AddSample(state, 1.0,Simulator);
+    BAG supporto = initialBelief;
+    supporto.normalize();
+
+    for (int i = 0; i < NUM_PARTICLES; i++) {
+        STATE* sampledS = supporto.CreateSample(Simulator);
+        result.AddSample(sampledS, 1.0,Simulator);
+    }  
+
+
+    //result.normalize();
+}
+*/

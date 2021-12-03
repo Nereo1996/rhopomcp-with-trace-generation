@@ -6,16 +6,17 @@
 
     using namespace UTILS;
     
-    static int counter =0;
-    //corretto
-    BAG::BAG(){ Particles.clear(); weight.clear(); normalized = false;}
+    BAG::BAG(){ 
+        Particles.clear(); 
+        weight.clear();
+        normalized = false;
+    }
 
 
     void BAG::Free(const SIMULATOR& simulator){ 
 
         for (std::vector<STATE*>::iterator i_state = Particles.begin(); i_state != Particles.end(); ++i_state){
-            //simulator.FreeState(*i_state);
-            counter--;
+            simulator.FreeState(*i_state);
         }
 
         Particles.clear();
@@ -24,6 +25,7 @@
     }
 
     STATE* BAG::CreateSample(const SIMULATOR& simulator) const{
+
         //srand(time(NULL));
         double r = ((double) rand() / (RAND_MAX));
         for(int i=0; i< Particles.size() ; i++){
@@ -34,11 +36,9 @@
             }
         }
 
+    }
 
-    }
-    void BAG::print_addedSample(){
-        std::cout << "counter = " << counter<< std::endl;
-    }
+
     //aggiunge una particle alla bag
     void BAG::AddSample(STATE* particle, double peso, const SIMULATOR& simulator){
 
@@ -47,15 +47,27 @@
             if( Particles[i]->isEqual(particle)){
                 flag = false;
                 weight[i] = weight[i]+peso;
-               // simulator.FreeState(particle);
+                simulator.FreeState(particle);
                 break;
             }
         }
 
         if(flag){
-            counter++;
-            Particles.push_back(particle);
+            Particles.push_back(simulator.Copy(*particle));
             weight.push_back(peso);
+        }
+
+           if(Particles.size()>2){
+
+            std::cout << "\naddsample con particle e peso" << std::endl;
+            std::cout << "error: size= " << Particles.size()<< std::endl;
+            std::cout << "check0: " << Particles[0]->isEqual(particle) <<  " check 1: " <<Particles[1]->isEqual(particle) << std::endl;
+            simulator.DisplayState(*Particles[0],std::cout);
+            std::cout << " -- ";
+            simulator.DisplayState(*particle,std::cout);
+            std::cout << "\nindirizzo 0 " << Particles[0] << " indirizzo 1: " << Particles[1] <<" parametro: " << particle<<std::endl;
+            exit(1);
+
         }
 
     }
@@ -63,54 +75,79 @@
     //aggiunge una particle alla bag
     void BAG::AddSample(STATE* particle, const SIMULATOR& simulator){
 
+        /*
         bool flag = true;
         for(int i = 0; i < Particles.size();++i){
 
             if( Particles[i]->isEqual(particle)){
                 flag = false;
                 weight[i]= weight[i]+1.0;
-               // simulator.FreeState(particle);
+                simulator.FreeState(particle);
                 break;
             }
 
         }
 
         if(flag){
-           // std::cout << "BAG::AddSample(STATE* particle, const SIMULATOR& simulator) non aveva lo stato corretto" << std::endl;
-            counter++;
             Particles.push_back(particle);
             weight.push_back(1.0);
+        }
+
+        */
+        AddSample(particle,1.0,simulator);
+
+        
+        if(Particles.size()>2){
+            std::cout << "\naddsample solo particle" << std::endl;
+            std::cout << "error: size= " << Particles.size()<< std::endl;
+            std::cout << "check0: " << Particles[0]->isEqual(particle) <<  " check 1: " <<Particles[1]->isEqual(particle) << std::endl;
+            simulator.DisplayState(*Particles[0],std::cout);
+            std::cout << " -- ";
+            simulator.DisplayState(*particle,std::cout);
+            std::cout << "indirizzo 0 " << Particles[0] << " indirizzo 1: " << Particles[1] <<" parametro: " << particle<<std::endl;
+            exit(1);
+
         }
 
     }
 
 
     void BAG::AddSample(BAG& beta, const SIMULATOR& simulator){
-        bool flag = true;
-
 
         for(int i =0;i < beta.GetNumSamples(); i++){
-
+            bool flag = true;
+/*
             for(int j = 0; j < Particles.size();++j){
 
                 if(Particles[j]->isEqual(beta.GetSample(i))){
                     flag = false;
                     weight[j]= weight[j]+beta.GetWeight(i);
+                    break;
                 }
-
 
             }
             if(flag){
-                STATE* support = const_cast <STATE*> (beta.GetSample(i));
-                //const STATE* support = beta.GetSample(i);
-                Particles.push_back(support);
+                //STATE* support = const_cast <STATE*> (beta.GetSample(i));
+                Particles.push_back(simulator.Copy(*beta.GetSample(i)));
                 weight.push_back(beta.GetWeight(i));
-            } else{
-                flag = true;
             }
+*/
+            AddSample(simulator.Copy(*beta.GetSample(i)),beta.GetWeight(i),simulator);
+               
+            if(Particles.size()>2){
+                std::cout << "\naddsample con bag" << std::endl;
+                std::cout << "error: size cumulative= " << Particles.size()<< " size della bag: " << beta.GetNumSamples() <<std::endl;
+                std::cout << "check0: " << Particles[0]->isEqual(beta.GetSample(i)) <<  " check 1: " <<Particles[1]->isEqual(beta.GetSample(i)) << std::endl;
+                simulator.DisplayState(*Particles[0],std::cout);
+                std::cout << " -- ";
+                simulator.DisplayState(*beta.GetSample(i),std::cout);
+                std::cout << "indirizzo 0 " << Particles[0] << " indirizzo 1: " << Particles[1] <<" parametro: " << beta.GetSample(i)<<std::endl;
+                exit(1);
 
-
+            }
         }
+
+        beta.Free(simulator);
 
     }
 
@@ -199,13 +236,3 @@
 
         return -1;
     }
-
-    /*
-    //campiona uno stato e lo manda al chiamante
-    STATE* BAG::CreateSample(const SIMULATOR& simulator) const {
-
-        const int index = Random(Particles.size());
-        const STATE* temp = (const STATE*)GetSample(index);
-        return simulator.Copy(*GetSample(index));
-    }
-*/

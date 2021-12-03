@@ -13,7 +13,7 @@ const double Tiger::NOISE = 0.15;
     std::mt19937 gen(rd());
 
 TigerState::TigerState() :
-tiger_position(0) {
+tiger_position(1) {
 }
 
 TigerState::TigerState(int position) : tiger_position(position) {
@@ -136,8 +136,8 @@ STATE* Tiger::Copy(const STATE& state) const{
 	
 	const TigerState& tigerstate = safe_cast<const TigerState&>(state);
 	TigerState* newstate = MemoryPool.Allocate();
-	*newstate = tigerstate;
 
+	newstate->tiger_position = tigerstate.tiger_position;
 	return newstate;
 
 }
@@ -205,13 +205,15 @@ void Tiger::Validate(const STATE& state) const
 
         const TigerState tigerstate = static_cast<const TigerState&>(state);
         string temp= tigerstate.tiger_position == POS_LEFT ? "LEFT" : "RIGHT";
-        ostr << "STATO: " << temp << " ";
+        if(tigerstate.tiger_position<1 || tigerstate.tiger_position >2)
+        	ostr << "error, tiger position = " << tigerstate.tiger_position ;
+        else
+        	ostr << "STATO: " << temp << " ";
   
 
     //std::cout << std::endl;
 
 }
-
 
  
 

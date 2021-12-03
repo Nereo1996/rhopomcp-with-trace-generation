@@ -22,7 +22,6 @@ public:
     // estrae uno particle dalla bag 
     //std::pair<STATE*,int> CreateSample(const SIMULATOR& simulator) const;
     STATE* CreateSample(const SIMULATOR& simulator) const;
-    void print_addedSample();
     
 
     //aggiunge uno stato alla bag di particle
