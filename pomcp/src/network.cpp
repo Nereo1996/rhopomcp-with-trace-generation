@@ -168,12 +168,9 @@ void NETWORK::DisplayObservation(const STATE& state, int observation, std::ostre
 
 void NETWORK::DisplayAction(int action, std::ostream& ostr) const
 {
-    switch (action)
-    {
-        if (action == NumMachines)
-            ostr << "No action" << endl;
-        int machine = action / 2;
-        int reboot = action % 2;
-        ostr << (reboot ? "Reboot" : "Ping") << " machine " << machine << endl;
-    }
+    //if (action == NumMachines)
+    //    ostr << "No action" << endl;
+    int machine = action / 2;
+    int reboot = action % 2;
+    ostr << (reboot ? "Reboot" : "Ping") << " machine " << machine << endl;
 }

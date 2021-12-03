@@ -110,26 +110,22 @@ bool Tiger::Step(STATE& s, int action, int& observation, double& reward) const
 
 
 
- int Tiger::observation(STATE& state , int action) const {
-		// if open, any observation
-		if((action == ACT_RIGHT) || (action == ACT_LEFT)) {
-			return OBS_NONE;
-		}
+int Tiger::observation(STATE& state , int action) const {
+    // if open, any observation
+    if((action == ACT_RIGHT) || (action == ACT_LEFT)) {
+        return OBS_NONE;
+    }
 
-	TigerState s = static_cast<TigerState&>(state);
+    TigerState s = static_cast<TigerState&>(state);
 
-		// if listening
-		if (action == ACT_OBS) {
+    // it must be action == ACT_OBS 
+    double r = RandomDouble(0.0, 1.0);
 
-	        double r = ((double) rand() / (RAND_MAX));
-
-            if(r <= 0.85){
-                return (s.tiger_position == POS_RIGHT?  OBS_RIGHT : OBS_LEFT);
-            } else{
-                return (s.tiger_position == POS_RIGHT? OBS_LEFT : OBS_RIGHT);
-            }
-		}
-	}
+    if(r <= 0.85)
+        return (s.tiger_position == POS_RIGHT?  OBS_RIGHT : OBS_LEFT);
+    else
+        return (s.tiger_position == POS_RIGHT? OBS_LEFT : OBS_RIGHT);
+}
 
 
 STATE* Tiger::Copy(const STATE& state) const{

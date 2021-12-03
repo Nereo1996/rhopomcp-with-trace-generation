@@ -86,11 +86,6 @@ public:
     virtual bool Step(STATE& , int , 
         int& , double& ) const = 0;
 
-
-
-
-
-        
     // Create new state and copy argument (must be same type)
     virtual STATE* Copy(const STATE& ) const = 0;
     
@@ -145,17 +140,23 @@ public:
     //Probabilità di aver osservato Z_t+1 dallo stato s_t con azione a_t e essere andati in s_t+1
     virtual double ProbObs(int , const STATE& , int , const STATE& ) const{ return 1; }
 
+    virtual int reward(const STATE&, int ) const {
+        assert(false); // not implemented
+        return 0;
+    };
 
-    virtual int reward(const STATE&, int ) const{};
-
-    virtual int observation(STATE&, int) const {};
-
+    virtual int observation(STATE&, int) const {
+        assert(false); // not implemented
+        return 0;
+    };
 
     //assegnamento reward caso rho
-    virtual double Rho_reward(STATE& , BAG&, int ) const{}
+    virtual double Rho_reward(STATE& , BAG&, int ) const {
+        assert(false); // not implemented
+        return 0.0;
+    };
     
 protected:
-
     int NumActions, NumObservations;
     double Discount, RewardRange;
     KNOWLEDGE Knowledge;

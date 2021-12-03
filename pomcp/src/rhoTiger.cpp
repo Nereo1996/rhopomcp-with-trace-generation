@@ -42,28 +42,13 @@ using namespace std;
 
 	}
 
-	double RhoTiger::ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const{
- 	  const TigerState startTigerstate = static_cast<const TigerState&>(startingState);
- 	  const TigerState finalTigerstate = static_cast<const TigerState&>(finalState);
- 	  //std::cout << "azione fatta: " << action << " osservazione fatta: " << observation << std::endl;
- 	  if(observation == OBS_NONE)
- 	  	return 0.5;
+double RhoTiger::ProbObs(int observation, const STATE& startingState, int action, const STATE&) const{
+    const TigerState startTigerstate = static_cast<const TigerState&>(startingState);
+    if (observation == OBS_NONE)
+        return action == ACT_OBS ? 0.0 : 1.0;
 
- 	  if(startTigerstate.tiger_position == POS_RIGHT){
-
- 	   if(observation == OBS_RIGHT) //action == ACT_OBS inutile, in caso di altre azioni avrebbe già terminato.
- 	  		return 1.0-Tiger::NOISE;
- 	  	else if(observation == OBS_LEFT)//action == ACT_OBS 
- 	  		return Tiger::NOISE;
-
- 	  } else{ //caso startTigerstate.tiger_position == POS_LEFT
-
- 	 	 if(observation == OBS_LEFT)
- 	  		return 1.0-Tiger::NOISE;
- 	 	 else if(observation == OBS_RIGHT) // manca il caso (action == ACT_OBS && observation == OBS_RIGHT)
- 	  		return Tiger::NOISE;
-
-
- 	  }
- 	  //nb. in questo problema non è necessario utilizzare lo stato successivo.
+    if (startTigerstate.tiger_position == POS_RIGHT)
+        return observation == OBS_RIGHT ? 1.0-Tiger::NOISE : Tiger::NOISE;
+    else
+        return observation == OBS_LEFT ? 1.0-Tiger::NOISE : Tiger::NOISE;
 }
