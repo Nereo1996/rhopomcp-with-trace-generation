@@ -2,7 +2,6 @@
 #define BAG_H
 
 #include <vector>
-#include <set>
 #include <iostream>
 
 class STATE;
@@ -13,14 +12,11 @@ class BAG
 public:
 
     BAG();
-    //~BAG();
-
 
     // libera memoria
     void Free(const SIMULATOR& simulator);
 
     // estrae uno particle dalla bag 
-    //std::pair<STATE*,int> CreateSample(const SIMULATOR& simulator) const;
     STATE* CreateSample(const SIMULATOR& simulator) const;
     
 
@@ -32,7 +28,6 @@ public:
 
     //aggiunge una bag alla cumulative BAG
     void AddSample(BAG& beta, const SIMULATOR& simulator);
-
 
     //copia un'intera bag
     void Copy(const BAG& particelle, const SIMULATOR& simulator);
@@ -52,27 +47,21 @@ public:
     //ritorna l'elemento in posizione index della bag
     const STATE* GetSample(int index) const { return Particles[index]; }
 
-
     //ritorna il peso associato all'elemento
     double GetWeight(int index) const{ return weight[index]; }
     
     //ritorna tutti gli stati delle particelle
     const std::vector<STATE*>& GetBag_State() const { return Particles; }
-    std::vector<STATE*>& GetBag_State() { return Particles; }
 
     //ritorna tutti i pesi delle particelle
     const std::vector<double>& GetBag_Weight() const {return weight;}
-    std::vector<double>& GetBag_Weight() {return weight;}
-
 
     //normalizza i pesi
     void normalize();
 
     int ParticlePosition(STATE& state);
 
-
     bool checkParticle(STATE* newstate);
-
     
 private:
 

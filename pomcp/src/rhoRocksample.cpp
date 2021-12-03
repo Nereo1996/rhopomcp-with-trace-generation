@@ -26,6 +26,6 @@ void RHOROCKSAMPLE::Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) 
 double RHOROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const{
 	const ROCKSAMPLE_STATE startRSstate = static_cast<const ROCKSAMPLE_STATE&>(startingState);
  	const ROCKSAMPLE_STATE finalRSstate = static_cast<const ROCKSAMPLE_STATE&>(finalState);
-
-
+    // TODO
+    return 0.0;
 }
