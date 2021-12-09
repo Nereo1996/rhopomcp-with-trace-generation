@@ -6,8 +6,10 @@
 
 using namespace UTILS;
 
-BAG::BAG() : Particles(), weight(), normalized(false) { 
+BAG::BAG() : Particles(), weight(), normalized(false){ 
 }
+
+int BAG::insert =0;
 
 void BAG::Free(const SIMULATOR& simulator){ 
     for (STATE * s: Particles) 
@@ -25,22 +27,26 @@ STATE* BAG::CreateSample(const SIMULATOR& simulator) const{
         else
             r -= weight[i];
     }
+
     return nullptr; // dummy
 }
 
 //aggiunge una particle alla bag
-void BAG::AddSample(STATE* particle, double peso, const SIMULATOR& simulator){
+void BAG::AddSample(STATE* particle, double peso, const SIMULATOR& simulator, bool count){
     assert(!normalized);
+    if(count){
+        insert++;
+    }
+
     bool flag = true;
     for(int i = 0; i < Particles.size();++i){
         if( Particles[i]->isEqual(particle)){
             flag = false;
             weight[i] = weight[i]+peso;
-            simulator.FreeState(particle);
+            //simulator.FreeState(particle);
             break;
         }
     }
-
     if (flag) {
         Particles.push_back(simulator.Copy(*particle));
         weight.push_back(peso);
@@ -60,21 +66,21 @@ void BAG::AddSample(STATE* particle, double peso, const SIMULATOR& simulator){
                   << " parametro: " << particle << std::endl;
         exit(1);
     }
+
 }
 
 //aggiunge una particle alla bag
-void BAG::AddSample(STATE* particle, const SIMULATOR& simulator){
-    AddSample(particle,1.0,simulator);
+void BAG::AddSample(STATE* particle, const SIMULATOR& simulator, bool count){
+    AddSample(particle,1.0,simulator,count);
 }
 
 
-void BAG::AddSample(BAG& beta, const SIMULATOR& simulator) {
+void BAG::AddSample(BAG& beta, const SIMULATOR& simulator, bool count) {
     for(int i =0;i < beta.GetNumSamples(); i++){
         bool flag = true;
-        AddSample(simulator.Copy(*beta.GetSample(i)),beta.GetWeight(i),simulator);
+        AddSample(simulator.Copy(*beta.GetSample(i)),beta.GetWeight(i),simulator,count);
     }
-
-    beta.Free(simulator);
+    //beta.Free(simulator);
 }
 
 bool BAG::checkParticle(STATE* newstate) {

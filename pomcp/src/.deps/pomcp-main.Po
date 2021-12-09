@@ -161,13 +161,11 @@ pomcp-main.o: main.cpp /usr/include/stdc-predef.h battleship.h \
  /usr/include/c++/9/bits/algorithmfwd.h \
  /usr/include/c++/9/bits/stl_heap.h /usr/include/c++/9/bits/stl_tempbuf.h \
  /usr/include/c++/9/bits/uniform_int_dist.h /usr/include/c++/9/limits \
- bag.h /usr/include/c++/9/set /usr/include/c++/9/bits/stl_tree.h \
- /usr/include/c++/9/ext/aligned_buffer.h \
- /usr/include/c++/9/bits/stl_set.h /usr/include/c++/9/bits/stl_multiset.h \
- /usr/include/c++/9/bits/erase_if.h /usr/include/c++/9/iostream \
- /usr/include/c++/9/istream /usr/include/c++/9/bits/istream.tcc grid.h \
- /usr/include/c++/9/list /usr/include/c++/9/bits/stl_list.h \
- /usr/include/c++/9/bits/allocated_ptr.h /usr/include/c++/9/bits/list.tcc \
+ bag.h /usr/include/c++/9/iostream /usr/include/c++/9/istream \
+ /usr/include/c++/9/bits/istream.tcc grid.h /usr/include/c++/9/list \
+ /usr/include/c++/9/bits/stl_list.h \
+ /usr/include/c++/9/bits/allocated_ptr.h \
+ /usr/include/c++/9/ext/aligned_buffer.h /usr/include/c++/9/bits/list.tcc \
  mcts.h statistic.h network.h pocman.h rocksample.h rhoRocksample.h tag.h \
  tiger.h rhoTiger.h experiment.h /usr/include/c++/9/fstream \
  /usr/include/c++/9/bits/codecvt.h \
@@ -196,9 +194,11 @@ pomcp-main.o: main.cpp /usr/include/stdc-predef.h battleship.h \
  /usr/include/boost/config/helper_macros.hpp \
  /usr/include/boost/version.hpp /usr/include/boost/config/auto_link.hpp \
  /usr/include/boost/program_options/errors.hpp /usr/include/c++/9/map \
- /usr/include/c++/9/bits/stl_map.h /usr/include/c++/9/tuple \
- /usr/include/c++/9/array /usr/include/c++/9/bits/uses_allocator.h \
+ /usr/include/c++/9/bits/stl_tree.h /usr/include/c++/9/bits/stl_map.h \
+ /usr/include/c++/9/tuple /usr/include/c++/9/array \
+ /usr/include/c++/9/bits/uses_allocator.h \
  /usr/include/c++/9/bits/invoke.h /usr/include/c++/9/bits/stl_multimap.h \
+ /usr/include/c++/9/bits/erase_if.h \
  /usr/include/boost/program_options/value_semantic.hpp \
  /usr/include/boost/any.hpp /usr/include/boost/type_index.hpp \
  /usr/include/boost/type_index/stl_type_index.hpp \
@@ -335,9 +335,11 @@ pomcp-main.o: main.cpp /usr/include/stdc-predef.h battleship.h \
  /usr/include/boost/container_hash/extensions.hpp \
  /usr/include/boost/detail/container_fwd.hpp /usr/include/c++/9/deque \
  /usr/include/c++/9/bits/stl_deque.h /usr/include/c++/9/bits/deque.tcc \
- /usr/include/c++/9/bitset /usr/include/c++/9/complex \
- /usr/include/c++/9/sstream /usr/include/c++/9/bits/sstream.tcc \
- /usr/include/c++/9/memory /usr/include/c++/9/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/9/set /usr/include/c++/9/bits/stl_set.h \
+ /usr/include/c++/9/bits/stl_multiset.h /usr/include/c++/9/bitset \
+ /usr/include/c++/9/complex /usr/include/c++/9/sstream \
+ /usr/include/c++/9/bits/sstream.tcc /usr/include/c++/9/memory \
+ /usr/include/c++/9/bits/stl_raw_storage_iter.h \
  /usr/include/c++/9/ext/concurrence.h \
  /usr/include/c++/9/bits/unique_ptr.h \
  /usr/include/c++/9/bits/shared_ptr.h \
@@ -1350,18 +1352,6 @@ memorypool.h:
 
 bag.h:
 
-/usr/include/c++/9/set:
-
-/usr/include/c++/9/bits/stl_tree.h:
-
-/usr/include/c++/9/ext/aligned_buffer.h:
-
-/usr/include/c++/9/bits/stl_set.h:
-
-/usr/include/c++/9/bits/stl_multiset.h:
-
-/usr/include/c++/9/bits/erase_if.h:
-
 /usr/include/c++/9/iostream:
 
 /usr/include/c++/9/istream:
@@ -1375,6 +1365,8 @@ grid.h:
 /usr/include/c++/9/bits/stl_list.h:
 
 /usr/include/c++/9/bits/allocated_ptr.h:
+
+/usr/include/c++/9/ext/aligned_buffer.h:
 
 /usr/include/c++/9/bits/list.tcc:
 
@@ -1462,6 +1454,8 @@ experiment.h:
 
 /usr/include/c++/9/map:
 
+/usr/include/c++/9/bits/stl_tree.h:
+
 /usr/include/c++/9/bits/stl_map.h:
 
 /usr/include/c++/9/tuple:
@@ -1473,6 +1467,8 @@ experiment.h:
 /usr/include/c++/9/bits/invoke.h:
 
 /usr/include/c++/9/bits/stl_multimap.h:
+
+/usr/include/c++/9/bits/erase_if.h:
 
 /usr/include/boost/program_options/value_semantic.hpp:
 
@@ -1775,6 +1771,12 @@ experiment.h:
 /usr/include/c++/9/bits/stl_deque.h:
 
 /usr/include/c++/9/bits/deque.tcc:
+
+/usr/include/c++/9/set:
+
+/usr/include/c++/9/bits/stl_set.h:
+
+/usr/include/c++/9/bits/stl_multiset.h:
 
 /usr/include/c++/9/bitset:
 

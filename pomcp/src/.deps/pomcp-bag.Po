@@ -39,13 +39,7 @@ pomcp-bag.o: bag.cpp /usr/include/stdc-predef.h bag.h \
  /usr/include/c++/9/bits/stl_bvector.h \
  /usr/include/c++/9/bits/functional_hash.h \
  /usr/include/c++/9/bits/range_access.h \
- /usr/include/c++/9/bits/vector.tcc /usr/include/c++/9/set \
- /usr/include/c++/9/bits/stl_tree.h \
- /usr/include/c++/9/bits/stl_function.h \
- /usr/include/c++/9/backward/binders.h \
- /usr/include/c++/9/ext/aligned_buffer.h \
- /usr/include/c++/9/bits/stl_set.h /usr/include/c++/9/bits/stl_multiset.h \
- /usr/include/c++/9/bits/erase_if.h /usr/include/c++/9/iostream \
+ /usr/include/c++/9/bits/vector.tcc /usr/include/c++/9/iostream \
  /usr/include/c++/9/ostream /usr/include/c++/9/ios \
  /usr/include/c++/9/iosfwd /usr/include/c++/9/bits/stringfwd.h \
  /usr/include/c++/9/bits/postypes.h /usr/include/c++/9/cwchar \
@@ -104,6 +98,8 @@ pomcp-bag.o: bag.cpp /usr/include/stdc-predef.h bag.h \
  /usr/include/c++/9/bits/locale_classes.h /usr/include/c++/9/string \
  /usr/include/c++/9/bits/ostream_insert.h \
  /usr/include/c++/9/bits/cxxabi_forced.h \
+ /usr/include/c++/9/bits/stl_function.h \
+ /usr/include/c++/9/backward/binders.h \
  /usr/include/c++/9/bits/basic_string.h \
  /usr/include/c++/9/ext/string_conversions.h /usr/include/c++/9/cstdlib \
  /usr/include/stdlib.h /usr/include/aarch64-linux-gnu/bits/waitflags.h \
@@ -273,22 +269,6 @@ bag.h:
 
 /usr/include/c++/9/bits/vector.tcc:
 
-/usr/include/c++/9/set:
-
-/usr/include/c++/9/bits/stl_tree.h:
-
-/usr/include/c++/9/bits/stl_function.h:
-
-/usr/include/c++/9/backward/binders.h:
-
-/usr/include/c++/9/ext/aligned_buffer.h:
-
-/usr/include/c++/9/bits/stl_set.h:
-
-/usr/include/c++/9/bits/stl_multiset.h:
-
-/usr/include/c++/9/bits/erase_if.h:
-
 /usr/include/c++/9/iostream:
 
 /usr/include/c++/9/ostream:
@@ -430,6 +410,10 @@ bag.h:
 /usr/include/c++/9/bits/ostream_insert.h:
 
 /usr/include/c++/9/bits/cxxabi_forced.h:
+
+/usr/include/c++/9/bits/stl_function.h:
+
+/usr/include/c++/9/backward/binders.h:
 
 /usr/include/c++/9/bits/basic_string.h:
 
