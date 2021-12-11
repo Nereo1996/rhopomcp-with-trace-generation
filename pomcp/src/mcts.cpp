@@ -80,13 +80,13 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     BELIEF_STATE beliefs;
     BAG bag;
 
-    cout << "update sta per fare un passo. bag precedente:";
-    BAG d;
-    d.Copy(Root->Bags(),Simulator);
-    d.normalize();
-    d.Display(cout,Simulator);
+    //cout << "update sta per fare un passo. bag precedente:";
+   // BAG d;
+   // d.Copy(Root->Bags(),Simulator);
+   // d.normalize();
+   // d.Display(cout,Simulator);
 
-    for(int a=0;a<3;a++){
+   /* for(int a=0;a<3;a++){
         for(int o=0;o<3;o++){
             QNODE& qnode = Root->Child(a);
             VNODE* vnode = qnode.Child(o);
@@ -101,12 +101,8 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
 
 
         }
-
-
-
-
     }
-    
+    */
     // Find matching vnode from the rest of the tree
     QNODE& qnode = Root->Child(action);
     VNODE* vnode = qnode.Child(observation);
@@ -152,7 +148,7 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     newRoot->Bags().AddSample(bag,Simulator);
 
     Root = newRoot;
-    Root->Bags().printInsert();
+    //Root->Bags().printInsert();
     //bag.Free(Simulator); #non serve. libero la bag già nell'AddSample
 
     if(PRINT_VALUES){
@@ -184,6 +180,7 @@ int MCTS::SelectAction()
 
 void MCTS::UCTSearch()
 {
+
     ClearStatistics();
     int historyDepth = History.Size();
 
@@ -191,10 +188,6 @@ void MCTS::UCTSearch()
     BAG rootBelief;
     rootBelief.Copy(Root->Bags(),Simulator);
     rootBelief.normalize();
-    if(false){
-        cout << "UCTSearch: prima del ciclo " ;
-        printmem();
-    }
 
     for (int n = 0; n < Params.NumSimulations; n++)    
     {
@@ -216,7 +209,8 @@ void MCTS::UCTSearch()
         BAG bag = generateInitialBag(state,rootBelief); //free gestita
 
         double totalReward = SimulateV_rho(*state, Root, bag);
-//      double totalReward = SimulateV(*state, Root);
+    
+  //    double totalReward = SimulateV(*state, Root);
         bag.Free(Simulator);
 
         StatTotalReward.Add(totalReward);
@@ -255,17 +249,13 @@ double MCTS::SimulateV_rho(STATE& state, VNODE* vnode, BAG& beta)
     double totalReward = SimulateQ_rho(state, qnode, action, beta, vnode->Bags());
     vnode->Value.Add(totalReward);
     AddRave(vnode, totalReward);
+
     return totalReward;
 
 }
 
 double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BAG& prev)
 {
-    if(false){
-        cout << "pre SimulateQ_rho " ;
-        printmem();
-    }
-
     int observation;
     double immediateReward, delayedReward = 0;
 
@@ -293,8 +283,9 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
     if (!vnode && !terminal && qnode.Value.GetCount() >= Params.ExpandCount)
         vnode = ExpandNode(&state);
 
+
     BAG betaprime = CreateBag_beta(*previous_state,action, observation, beta, &state);
-    
+
     prev.AddSample(beta,Simulator,true);
     Simulator.FreeState(previous_state);
  
@@ -304,32 +295,25 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
         if (vnode){
             //vnode->Bags().AddSample(betaprime,Simulator);
             delayedReward = SimulateV_rho(state, vnode, betaprime);
-            beta.Free(Simulator);
         }
         else
             delayedReward = Rollout(state);
         TreeDepth--;
     }
-    else
-    {
-        betaprime.Free(Simulator);
-        beta.Free(Simulator);
-    }
-
-            if(false){
-            cout << "post SimulateQ_rho " ;
-            printmem();
-        }
 
     BAG supporto;
     supporto.Copy(prev,Simulator);
     supporto.normalize();
 //    immediateReward = Simulator.Rho_reward(supporto, action, vnode->Bags());
 //    cout << "reward: " <<immediateReward << endl;
+
+    beta.Free(Simulator);
+    betaprime.Free(Simulator);
     supporto.Free(Simulator);
 
     double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
     qnode.Value.Add(totalReward);
+
     return totalReward;
 }
 
@@ -339,7 +323,6 @@ BAG MCTS::CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag
     BAG generatedBag;
     BAG normalized_belief;
     normalized_belief.Copy(bag,Simulator);
-
     normalized_belief.normalize();
     double tmp =0;
     int temp_obs = 0;
@@ -857,7 +840,7 @@ void MCTS::RolloutSearch()
 }
 
 
-void MCTS::printmem(){
+long long MCTS::printmem(){
     struct sysinfo memInfo;
 
     sysinfo (&memInfo);
@@ -865,5 +848,6 @@ void MCTS::printmem(){
     //Add other values in next statement to avoid int overflow on right hand side...
     totalVirtualMem += memInfo.totalswap;
     totalVirtualMem *= memInfo.mem_unit;
-    cout << " meminfo.freeram " << memInfo.freeram << endl;
+    return memInfo.freeram;
+    //cout << " meminfo.freeram " << memInfo.freeram << endl;
     }

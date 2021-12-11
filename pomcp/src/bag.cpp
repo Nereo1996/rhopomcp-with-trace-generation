@@ -78,7 +78,8 @@ void BAG::AddSample(STATE* particle, const SIMULATOR& simulator, bool count){
 void BAG::AddSample(BAG& beta, const SIMULATOR& simulator, bool count) {
     for(int i =0;i < beta.GetNumSamples(); i++){
         bool flag = true;
-        AddSample(simulator.Copy(*beta.GetSample(i)),beta.GetWeight(i),simulator,count);
+        STATE* support = const_cast <STATE*> (beta.GetSample(i));
+        AddSample(support,beta.GetWeight(i),simulator,count);
     }
     //beta.Free(simulator);
 }

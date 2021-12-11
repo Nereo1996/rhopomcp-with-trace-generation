@@ -85,7 +85,7 @@ private:
     void AddSample_Bag(VNODE*& node, STATE& state, double peso);
     BAG generateInitialBag(STATE* state, BAG& initialBelief);
     //void generateInitialBag_beta(STATE* state, BAG& initialBelief,BAG& result);
-    void printmem();
+    long long printmem();
 
     // Fast lookup table for UCB
     static const int UCB_N = 10000, UCB_n = 100;
