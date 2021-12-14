@@ -15,13 +15,9 @@ using namespace UTILS;
 //-----------------------------------------------------------------------------
 
 const int NUM_PARTICLES = 100;
-
 static bool PRINT_VALUES = false;
 static bool PRINT_IT = false;
 static bool PRINT_DEBUG_TREE = false;
-static bool checkMem = true;
-
-
 
 
 
@@ -103,11 +99,10 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
         }
     }
     */
+
     // Find matching vnode from the rest of the tree
     QNODE& qnode = Root->Child(action);
     VNODE* vnode = qnode.Child(observation);
-
-
 
     if (vnode)
     {
@@ -148,8 +143,7 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     newRoot->Bags().AddSample(bag,Simulator);
 
     Root = newRoot;
-    //Root->Bags().printInsert();
-    //bag.Free(Simulator); #non serve. libero la bag già nell'AddSample
+    //Root->Bags().printInsert(); //funzione che conta il numero di insert che vengono fatte nella bag
 
     if(PRINT_VALUES){
         cout << "bag dopo aver fatto un passo" << endl;
@@ -226,7 +220,7 @@ void MCTS::UCTSearch()
 
     }
 
-    rootBelief.Free(Simulator); //in teoria questo ci va
+    rootBelief.Free(Simulator);
     DisplayStatistics(cout);
 
 }
@@ -307,6 +301,8 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
 //    immediateReward = Simulator.Rho_reward(supporto, action, vnode->Bags());
 //    cout << "reward: " <<immediateReward << endl;
 
+
+
     beta.Free(Simulator);
     betaprime.Free(Simulator);
     supporto.Free(Simulator);
@@ -354,22 +350,12 @@ BAG MCTS::CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag
 
 BAG MCTS::generateInitialBag(STATE* state, BAG& initialBelief){
 
-  
     BAG bag;
-
-    //STATE* copy = Simulator.Copy(*state);
     bag.AddSample(state,Simulator);
 
       if(initialBelief.GetNumSamples()==0)
         return bag;
-
-    /*BAG supporto;
-    supporto.Copy(initialBelief,Simulator);
-
-    supporto.normalize();
-*/
     for (int i = 0; i < NUM_PARTICLES; i++) {
-    //    STATE* sampledS = supporto.CreateSample(Simulator);
         STATE* sampledS = initialBelief.CreateSample(Simulator);
         bag.AddSample(sampledS,Simulator);
         Simulator.FreeState(sampledS);
@@ -377,14 +363,9 @@ BAG MCTS::generateInitialBag(STATE* state, BAG& initialBelief){
 
     if(PRINT_DEBUG_TREE){
         cout << "\n----" << endl;
-       // supporto.Display(cout,Simulator);
-       // cout <<  "**" << endl;
         bag.Display(cout,Simulator);
         cout << "----" << endl;
     }
-
-   // supporto.Free(Simulator); //in teoria va liberato
-
     return bag;
 }
 
@@ -840,7 +821,8 @@ void MCTS::RolloutSearch()
 }
 
 
-long long MCTS::printmem(){
+long long MCTS::printmem()
+{
     struct sysinfo memInfo;
 
     sysinfo (&memInfo);
@@ -850,4 +832,4 @@ long long MCTS::printmem(){
     totalVirtualMem *= memInfo.mem_unit;
     return memInfo.freeram;
     //cout << " meminfo.freeram " << memInfo.freeram << endl;
-    }
+}
