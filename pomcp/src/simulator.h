@@ -2,6 +2,7 @@
 #define SIMULATOR_H
 
 #include "history.h"
+#include "bag.h"
 #include "node.h"
 #include "utils.h"
 #include <iostream>
@@ -12,8 +13,7 @@ class BELIEF_STATE;
 class STATE : public MEMORY_OBJECT
 {
 public:
-    virtual bool isEqual(STATE*) const {return false;};
-    virtual bool isEqual(const STATE*) const {return false;};
+    virtual bool isEqual(const STATE &) const {return false;};
     virtual void x(const STATE*) const {return;};
 };
 
