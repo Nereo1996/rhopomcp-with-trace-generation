@@ -1,8 +1,9 @@
 #ifndef MCTS_H
 #define MCTS_H
 
-#include "simulator.h"
+#include "bag.h"
 #include "node.h"
+#include "simulator.h"
 #include "statistic.h"
 
 class MCTS

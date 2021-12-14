@@ -19,15 +19,11 @@ public:
     // estrae uno particle dalla bag 
     STATE* CreateSample(const SIMULATOR& simulator) const;
     
-
     //aggiunge uno stato alla bag di particle
-    void AddSample(STATE* particle, const SIMULATOR& simulator, bool count = false);
-
-    //aggiunge uno stato alla bag di particle
-    void AddSample(STATE* particle, double peso, const SIMULATOR& simulator, bool count = false);
+    void AddSample(const SIMULATOR& simulator, const STATE &particle, double peso = 1.0);
 
     //aggiunge una bag alla cumulative BAG
-    void AddSample(BAG& beta, const SIMULATOR& simulator, bool count = false);
+    void AddSample(const SIMULATOR& simulator, const BAG &beta);
 
     //copia un'intera bag
     void Copy(const BAG& particelle, const SIMULATOR& simulator);
@@ -45,7 +41,8 @@ public:
     int GetNumSamples() const { return Particles.size(); }
 
     //ritorna l'elemento in posizione index della bag
-    const STATE* GetSample(int index) const { return Particles[index]; }
+    const STATE &GetSample(int index) const { return *Particles[index]; }
+    STATE &GetSample(int index) { return *Particles[index]; }
 
     //ritorna il peso associato all'elemento
     double GetWeight(int index) const{ return weight[index]; }
@@ -61,18 +58,19 @@ public:
     //normalizza i pesi
     void normalize();
 
-    int ParticlePosition(STATE& state);
+    int ParticlePosition(const STATE& state) const;
 
-    bool checkParticle(STATE* newstate);
+    bool checkParticle(const STATE &newstate);
     
 private:
+    static constexpr bool count = true;
 
     std::vector<STATE*> Particles;
     std::vector<double> weight;
 
     bool normalized;
 
-    static int insert;
+    int insert = 0;
 };
 
 #endif // BAG_H

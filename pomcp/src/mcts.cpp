@@ -1,13 +1,9 @@
 #include "mcts.h"
 #include "testsimulator.h"
 #include <math.h>
-
 #include <algorithm>
-
 #include "sys/types.h"
 #include "sys/sysinfo.h"
-
-
 
 using namespace std;
 using namespace UTILS;
@@ -18,8 +14,6 @@ const int NUM_PARTICLES = 100;
 static bool PRINT_VALUES = false;
 static bool PRINT_IT = false;
 static bool PRINT_DEBUG_TREE = false;
-
-
 
 MCTS::PARAMS::PARAMS()
 :   Verbose(0),
@@ -40,6 +34,7 @@ DisableTree(false)
 
 using std::cout;
 using std::endl;
+
 MCTS::MCTS(const SIMULATOR& simulator, const PARAMS& params)
 :   Simulator(simulator),
 Params(params),
@@ -56,10 +51,9 @@ TreeDepth(0)
     //creazione della prima bag di particelle
     for(int j=0; j< NUM_PARTICLES; j++){
         STATE* s = Simulator.CreateStartState();
-        Root->Bags().AddSample(s, Simulator,true);
+        Root->Bags().AddSample(Simulator, *s);
         Simulator.FreeState(s);
     }
-
 }
 
 MCTS::~MCTS()
@@ -140,7 +134,7 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
 
     VNODE* newRoot = ExpandNode(state);
     newRoot->Beliefs() = beliefs;
-    newRoot->Bags().AddSample(bag,Simulator);
+    newRoot->Bags().AddSample(Simulator, bag);
 
     Root = newRoot;
     //Root->Bags().printInsert(); //funzione che conta il numero di insert che vengono fatte nella bag
@@ -225,8 +219,6 @@ void MCTS::UCTSearch()
 
 }
 
-
-
 double MCTS::SimulateV_rho(STATE& state, VNODE* vnode, BAG& beta)
 {
     int action = GreedyUCB(vnode, true);
@@ -280,7 +272,7 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
 
     BAG betaprime = CreateBag_beta(*previous_state,action, observation, beta, &state);
 
-    prev.AddSample(beta,Simulator,true);
+    prev.AddSample(Simulator, beta);
     Simulator.FreeState(previous_state);
  
     if (!terminal)
@@ -328,10 +320,10 @@ BAG MCTS::CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag
         STATE* previous_state = Simulator.Copy(*state);
         Simulator.Step(*state, action, temp_obs, tmp);
         double probability = Simulator.ProbObs(temp_obs,*previous_state,action, *state);
-        if(probability >0){
-            generatedBag.AddSample(state,probability,Simulator);
-
+        if (probability >0){
+            generatedBag.AddSample(Simulator, *state, probability);
         }
+
         Simulator.FreeState(state);
         Simulator.FreeState(previous_state);
 
@@ -339,7 +331,7 @@ BAG MCTS::CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag
  
     double probability = Simulator.ProbObs(observation,previous, action, *next);
 
-    generatedBag.AddSample(next,probability,Simulator);
+    generatedBag.AddSample(Simulator, *next, probability);
  
     if (generatedBag.Empty())
         cout << "no particles in the generated BAG" << endl;
@@ -351,13 +343,14 @@ BAG MCTS::CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag
 BAG MCTS::generateInitialBag(STATE* state, BAG& initialBelief){
 
     BAG bag;
-    bag.AddSample(state,Simulator);
+    bag.AddSample(Simulator, *state);
 
-      if(initialBelief.GetNumSamples()==0)
+    if (initialBelief.Empty())
         return bag;
+
     for (int i = 0; i < NUM_PARTICLES; i++) {
         STATE* sampledS = initialBelief.CreateSample(Simulator);
-        bag.AddSample(sampledS,Simulator);
+        bag.AddSample(Simulator, *sampledS);
         Simulator.FreeState(sampledS);
     }  
 
@@ -685,14 +678,12 @@ void MCTS::AddSample(VNODE* node, const STATE& state)
 
 void MCTS::AddSample_Bag(VNODE*& node, STATE& state, double peso)
 {
-    STATE* sample = Simulator.Copy(state);
-    node->Bags().AddSample(sample,peso,Simulator);
-    //node->Bags().normalize();
+    node->Bags().AddSample(Simulator, state, peso);
 
     if (Params.Verbose >= 2)
     {
         cout << "Adding sample to bag:" << endl;
-        Simulator.DisplayState(*sample, cout);
+        Simulator.DisplayState(state, cout);
     }
 }
 
