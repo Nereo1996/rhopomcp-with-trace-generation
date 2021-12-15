@@ -3,6 +3,7 @@
 
 #include "history.h"
 #include "bag.h"
+#include "beliefstate.h"
 #include "node.h"
 #include "utils.h"
 #include <iostream>
@@ -151,7 +152,7 @@ public:
     };
 
     //assegnamento reward caso rho
-    virtual double Rho_reward(BAG& , int, BAG& ) const {
+    virtual double Rho_reward(const BAG& , int) const {
         assert(false); // not implemented
         return 0.0;
     };

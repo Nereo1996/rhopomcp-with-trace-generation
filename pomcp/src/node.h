@@ -1,7 +1,6 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "beliefstate.h"
 #include "utils.h"
 #include "bag.h"
 #include <iostream>
@@ -105,13 +104,8 @@ public:
 
     QNODE& Child(int c) { return Children[c]; }
     const QNODE& Child(int c) const { return Children[c]; }
-    BELIEF_STATE& Beliefs() { return BeliefState; }
-    const BELIEF_STATE& Beliefs() const { return BeliefState; }
-
-    //for bag
-    BAG& Bags(){ return Bag; }
-    const BAG& Bags() const { return Bag; }
-
+    BAG& Beliefs() { return Bag; }
+    const BAG& Beliefs() const { return Bag; }
 
     void SetChildren(int count, double value);
 
@@ -123,7 +117,6 @@ public:
 private:
 
     std::vector<QNODE> Children;
-    BELIEF_STATE BeliefState;
     BAG Bag;
     static MEMORY_POOL<VNODE> VNodePool;
 };

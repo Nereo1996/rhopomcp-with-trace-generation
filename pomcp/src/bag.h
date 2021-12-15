@@ -42,35 +42,24 @@ public:
 
     //ritorna l'elemento in posizione index della bag
     const STATE &GetSample(int index) const { return *Particles[index]; }
-    STATE &GetSample(int index) { return *Particles[index]; }
 
     //ritorna il peso associato all'elemento
     double GetWeight(int index) const{ return weight[index]; }
     
-    //ritorna tutti gli stati delle particelle
-    const std::vector<STATE*>& GetBag_State() const { return Particles; }
-
-    //ritorna tutti i pesi delle particelle
-    const std::vector<double>& GetBag_Weight() const {return weight;}
-
     void printInsert(){std::cout << "n. insert: " << insert << std::endl;}
 
     //normalizza i pesi
     void normalize();
+    bool is_normalized() const { return normalized; }
 
     int ParticlePosition(const STATE& state) const;
 
-    bool checkParticle(const STATE &newstate);
-    
 private:
-    static constexpr bool count = true;
-
+    static constexpr bool count = false;
+    bool normalized;
+    int insert = 0;
     std::vector<STATE*> Particles;
     std::vector<double> weight;
-
-    bool normalized;
-
-    int insert = 0;
 };
 
 #endif // BAG_H

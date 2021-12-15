@@ -8,7 +8,7 @@
 class RhoTiger : public Tiger {  
 public:
     RhoTiger();
-    virtual double Rho_reward(BAG& prevbelief, int action, BAG& belief) const;
+    virtual double Rho_reward(const BAG& belief, int action) const;
     virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
 };
 

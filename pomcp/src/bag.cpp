@@ -18,6 +18,8 @@ void BAG::Free(const SIMULATOR& simulator){
 }
 
 STATE* BAG::CreateSample(const SIMULATOR& simulator) const{
+    assert(normalized);
+
     double r = UTILS::RandomDouble(0.0, 1.0);
     for (int i = 0; i < Particles.size() ; i++) {
         if(r <= weight[i])
@@ -65,14 +67,6 @@ void BAG::AddSample(const SIMULATOR& simulator, const STATE &particle, double pe
 void BAG::AddSample(const SIMULATOR& simulator, const BAG &beta) {
     for (int i = 0; i < beta.GetNumSamples(); i++)
         AddSample(simulator, beta.GetSample(i), beta.GetWeight(i));
-}
-
-bool BAG::checkParticle(const STATE &newstate) {
-    for (int i = 0; i < Particles.size();++i) {
-        if (Particles[i]->isEqual(newstate))
-            return true;
-    }
-    return false;
 }
 
 void BAG::Copy(const BAG& bag, const SIMULATOR& simulator) {

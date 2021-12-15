@@ -41,8 +41,9 @@ public:
     void RolloutSearch();
 
     double Rollout(STATE& state);
+    double Rho_Rollout(STATE& state, BAG &bag);
 
-    const BELIEF_STATE& BeliefState() const { return Root->Beliefs(); }
+    const BAG& BeliefState() const { return Root->Beliefs(); }
     const HISTORY& GetHistory() const { return History; }
     const SIMULATOR::STATUS& GetStatus() const { return Status; }
     void ClearStatistics();
@@ -73,18 +74,17 @@ private:
     void AddRave(VNODE* vnode, double totalReward);
     VNODE* ExpandNode(const STATE* state);
     void AddSample(VNODE* node, const STATE& state);
-    void AddTransforms(VNODE* root, BELIEF_STATE& beliefs);
+    void AddTransforms(VNODE* root, BAG& beliefs);
     STATE* CreateTransform() const;
-    void Resample(BELIEF_STATE& beliefs);
+    void Resample(BAG& beliefs);
 
     //for bag
     //void CreateBag(VNODE*& bag_successiva, int action, int& observation, double& immediateReward, BAG& bag);
     //void CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next);
-    BAG CreateBag_beta(STATE& previous, int action, int& observation, BAG& bag, STATE* next);
+    BAG CreateBag_beta(const STATE& previous, int action, int observation, const BAG& bag, const STATE &next);
     double SimulateV_rho(STATE& state, VNODE* vnode, BAG& bag);
-    double SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag, BAG& prev);
-    void AddSample_Bag(VNODE*& node, STATE& state, double peso);
-    BAG generateInitialBag(STATE* state, BAG& initialBelief);
+    double SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag, BAG& prev );
+    BAG generateInitialBag(STATE* state, const BAG& initialBelief);
     //void generateInitialBag_beta(STATE* state, BAG& initialBelief,BAG& result);
     long long printmem();
 
