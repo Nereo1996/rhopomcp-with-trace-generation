@@ -12,11 +12,12 @@ RhoTiger::RhoTiger(){
     RewardRange = 102;
 }
 
-double RhoTiger::Rho_reward(BAG& prevbelief, int action, BAG& belief) const {
+double RhoTiger::Rho_reward(const BAG& belief, int action) const {
+    assert(belief.is_normalized());
     double r = 0;
-    for (int i = 0; i < prevbelief.GetNumSamples(); i++) {
-        int rew = reward(prevbelief.GetSample(i), action);
-        r += rew * prevbelief.GetWeight(i);
+    for (int i = 0; i < belief.GetNumSamples(); i++) {
+        int rew = reward(belief.GetSample(i), action);
+        r += rew * belief.GetWeight(i);
     }
     return r;
 }

@@ -22,6 +22,7 @@ Tiger::Tiger(){
     NumActions = 3;
     NumObservations = 3;
     RewardRange = 102;
+    Discount = 0.95;
 }
 
 bool Tiger::Step(STATE& s, int action, int& observation, double& reward) const 

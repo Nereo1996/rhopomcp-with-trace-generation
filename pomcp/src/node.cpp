@@ -75,7 +75,6 @@ VNODE* VNODE::Create()
 
 void VNODE::Free(VNODE* vnode, const SIMULATOR& simulator)
 {
-    vnode->BeliefState.Free(simulator);
     vnode->Bag.Free(simulator);
     VNodePool.Free(vnode);
     for (int action = 0; action < VNODE::NumChildren; action++)
