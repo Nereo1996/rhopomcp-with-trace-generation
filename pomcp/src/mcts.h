@@ -40,7 +40,6 @@ public:
     void UCTSearch();
     void RolloutSearch();
 
-    double Rollout(STATE& state);
     double Rho_Rollout(STATE& state, BAG &bag);
 
     const BAG& BeliefState() const { return Root->Beliefs(); }
@@ -51,7 +50,6 @@ public:
     void DisplayValue(int depth, std::ostream& ostr) const;
     void DisplayPolicy(int depth, std::ostream& ostr) const;
 
-    static void UnitTest();
     static void InitFastUCB(double exploration);
 
 private:
@@ -69,8 +67,6 @@ private:
 
     int GreedyUCB(VNODE* vnode, bool ucb) const;
     int SelectRandom() const;
-    double SimulateV(STATE& state, VNODE* vnode);
-    double SimulateQ(STATE& state, QNODE& qnode, int action);
     void AddRave(VNODE* vnode, double totalReward);
     VNODE* ExpandNode(const STATE* state);
     void AddSample(VNODE* node, const STATE& state);
@@ -79,14 +75,10 @@ private:
     void Resample(BAG& beliefs);
 
     //for bag
-    //void CreateBag(VNODE*& bag_successiva, int action, int& observation, double& immediateReward, BAG& bag);
-    //void CreateBag(VNODE*& bag_successiva, STATE& previous, int action, int& observation, double& immediateReward, BAG& bag, STATE& next);
     BAG CreateBag_beta(const STATE& previous, int action, int observation, const BAG& bag, const STATE &next);
     double SimulateV_rho(STATE& state, VNODE* vnode, BAG& bag);
     double SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& bag, BAG& prev );
     BAG generateInitialBag(STATE* state, const BAG& initialBelief);
-    //void generateInitialBag_beta(STATE* state, BAG& initialBelief,BAG& result);
-    long long printmem();
 
     // Fast lookup table for UCB
     static const int UCB_N = 10000, UCB_n = 100;
@@ -95,10 +87,6 @@ private:
 
     double FastUCB(int N, int n, double logN) const;
 
-    static void UnitTestGreedy();
-    static void UnitTestUCB();
-    static void UnitTestRollout();
-    static void UnitTestSearch(int depth);
 };
 
 #endif // MCTS_H

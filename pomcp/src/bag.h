@@ -59,7 +59,7 @@ private:
     bool normalized;
     int insert = 0;
     std::vector<STATE*> Particles;
-    std::vector<double> weight;
+    std::vector<double> weight; 
 };
 
 #endif // BAG_H

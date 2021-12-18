@@ -1,12 +1,6 @@
-#include "battleship.h"
 #include "mcts.h"
-#include "network.h"
-#include "pocman.h"
 #include "rocksample.h"
-#include "rhoRocksample.h"
-#include "tag.h"
 #include "tiger.h"
-#include "rhoTiger.h"
 #include "experiment.h"
 #include <boost/program_options.hpp>
 
@@ -19,8 +13,6 @@ void UnitTests()
     UTILS::UnitTest();
     cout << "Testing COORD" << endl;
     COORD::UnitTest();
-    cout << "Testing MCTS" << endl;
-    MCTS::UnitTest();
 }
 
 void disableBufferedIO(void)
@@ -100,45 +92,15 @@ int main(int argc, char* argv[])
     SIMULATOR* real = 0;
     SIMULATOR* simulator = 0;
 
-    if (problem == "battleship")
-    {
-        real = new BATTLESHIP(size, size, number);
-        simulator = new BATTLESHIP(size, size, number);
-    }
-    else if (problem == "pocman")
-    {
-        real = new FULL_POCMAN;
-        simulator = new FULL_POCMAN;
-    }
-    else if (problem == "network")
-    {
-        real = new NETWORK(size, number);
-        simulator = new NETWORK(size, number);
-    }
-    else if (problem == "rocksample")
+    if (problem == "rocksample")
     {
         real = new ROCKSAMPLE(size, number);
         simulator = new ROCKSAMPLE(size, number);
-    }
-    else if (problem == "rhorocksample")
-    {
-        real = new RHOROCKSAMPLE(size, number);
-        simulator = new RHOROCKSAMPLE(size, number);
-    }
-    else if (problem == "tag")
-    {
-        real = new TAG(number);
-        simulator = new TAG(number);
     }
     else if(problem == "tiger")
     {
         real = new Tiger();
         simulator = new Tiger();
-    }
-    else if(problem == "rhotiger")
-    {
-        real = new RhoTiger();
-        simulator = new RhoTiger();
     }
     else 
     {

@@ -140,7 +140,7 @@ void SIMULATOR::UpdateAlpha(QNODE& qnode, const STATE& state) const
 {
 }
 
-void SIMULATOR::DisplayBeliefs(const BELIEF_STATE& beliefState, 
+void SIMULATOR::DisplayBeliefs(const BAG& beliefState, 
     ostream& ostr) const
 {
 }

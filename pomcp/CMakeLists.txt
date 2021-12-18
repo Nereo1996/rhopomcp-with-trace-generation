@@ -9,21 +9,13 @@ include_directories(${Boost_INCLUDE_DIR})
 
 add_executable(pomcp
     ./src/bag.cpp
-    ./src/battleship.cpp
-    ./src/beliefstate.cpp
     ./src/coord.cpp
     ./src/experiment.cpp
     ./src/main.cpp
     ./src/mcts.cpp
-    ./src/network.cpp
     ./src/node.cpp
-    ./src/pocman.cpp
     ./src/rocksample.cpp
-    ./src/rhoRocksample.cpp
-    ./src/rhoTiger.cpp
     ./src/simulator.cpp
-    ./src/tag.cpp
-    ./src/testsimulator.cpp
     ./src/tiger.cpp
     ./src/utils.cpp
     )

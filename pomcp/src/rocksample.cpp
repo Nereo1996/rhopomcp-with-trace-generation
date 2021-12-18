@@ -268,6 +268,24 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
     return false;
 }
 
+
+
+void ROCKSAMPLE::Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) const{
+
+        reward = reward * beliefs.GetWeight(pos);
+}
+
+
+double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const{
+    const ROCKSAMPLE_STATE startRSstate = static_cast<const ROCKSAMPLE_STATE&>(startingState);
+    const ROCKSAMPLE_STATE finalRSstate = static_cast<const ROCKSAMPLE_STATE&>(finalState);
+    // TODO
+    return 0.0;
+}
+
+
+
+
 bool ROCKSAMPLE::LocalMove(STATE& state, const HISTORY& history,
     int stepObs, const STATUS& status) const
 {
@@ -467,7 +485,7 @@ int ROCKSAMPLE::SelectTarget(const ROCKSAMPLE_STATE& rockstate) const
     return bestRock;
 }
 
-void ROCKSAMPLE::DisplayBeliefs(const BELIEF_STATE& beliefState,
+void ROCKSAMPLE::DisplayBeliefs(const BAG& beliefState,
     std::ostream& ostr) const
 {
 }

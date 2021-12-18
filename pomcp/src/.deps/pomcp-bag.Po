@@ -145,7 +145,7 @@ pomcp-bag.o: bag.cpp /usr/include/stdc-predef.h bag.h \
  /usr/include/c++/9/bits/basic_ios.tcc \
  /usr/include/c++/9/bits/ostream.tcc /usr/include/c++/9/istream \
  /usr/include/c++/9/bits/istream.tcc simulator.h history.h \
- /usr/include/assert.h node.h beliefstate.h utils.h \
+ /usr/include/assert.h beliefstate.h node.h utils.h \
  /usr/include/c++/9/stdlib.h /usr/include/c++/9/math.h \
  /usr/include/c++/9/cmath /usr/include/math.h \
  /usr/include/aarch64-linux-gnu/bits/math-vector.h \
@@ -537,9 +537,9 @@ history.h:
 
 /usr/include/assert.h:
 
-node.h:
-
 beliefstate.h:
+
+node.h:
 
 utils.h:
 

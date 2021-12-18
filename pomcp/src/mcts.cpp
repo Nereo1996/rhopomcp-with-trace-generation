@@ -1,5 +1,4 @@
 #include "mcts.h"
-#include "testsimulator.h"
 #include <math.h>
 #include <algorithm>
 #include "sys/types.h"
@@ -51,6 +50,8 @@ MCTS::MCTS(const SIMULATOR& simulator, const PARAMS& params)
         Root->Beliefs().AddSample(Simulator, *s);
         Simulator.FreeState(s);
     }
+
+
 }
 
 MCTS::~MCTS()
@@ -117,7 +118,6 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
         s.normalize();
         s.Display(cout,Simulator);
         s.Free(Simulator);
-        //cout << "belief dopo aver fatto un passo" << endl;
         ///Simulator.DisplayBeliefs(Root->Beliefs(),std::cout);
     }  
 
@@ -161,7 +161,6 @@ void MCTS::UCTSearch()
 
         double totalReward = SimulateV_rho(*state, Root, bag);
 
-        //    double totalReward = SimulateV(*state, Root);
         bag.Free(Simulator);
 
         StatTotalReward.Add(totalReward);
@@ -247,6 +246,7 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
         TreeDepth--;
     }
     betaprime.Free(Simulator);
+
 
     BAG rewardbag;
     rewardbag.AddSample(Simulator, prev);
@@ -368,174 +368,9 @@ double MCTS::Rho_Rollout(STATE& state, BAG &beta)
     return totalReward;
 }
 
-//-----------------------------------------------------------------------------
-
-void MCTS::UnitTest()
-{
-    UnitTestGreedy();
-    UnitTestUCB();
-    UnitTestRollout();
-    for (int depth = 1; depth <= 3; ++depth)
-        UnitTestSearch(depth);
-}
-
-void MCTS::UnitTestGreedy()
-{
-    TEST_SIMULATOR testSimulator(5, 5, 0);
-    PARAMS params;
-    MCTS mcts(testSimulator, params);
-    int numAct = testSimulator.GetNumActions();
-    int numObs = testSimulator.GetNumObservations();
-
-    VNODE* vnode = mcts.ExpandNode(testSimulator.CreateStartState());
-    vnode->Value.Set(1, 0);
-    vnode->Child(0).Value.Set(0, 1);
-    for (int action = 1; action < numAct; action++)
-        vnode->Child(action).Value.Set(0, 0);
-    assert(mcts.GreedyUCB(vnode, false) == 0);
-}
-
-void MCTS::UnitTestUCB()
-{
-    TEST_SIMULATOR testSimulator(5, 5, 0);
-    PARAMS params;
-    MCTS mcts(testSimulator, params);
-    int numAct = testSimulator.GetNumActions();
-    int numObs = testSimulator.GetNumObservations();
-
-    // With equal value, action with lowest count is selected
-    VNODE* vnode1 = mcts.ExpandNode(testSimulator.CreateStartState());
-    vnode1->Value.Set(1, 0);
-    for (int action = 0; action < numAct; action++)
-        if (action == 3)
-            vnode1->Child(action).Value.Set(99, 0);
-        else
-            vnode1->Child(action).Value.Set(100 + action, 0);
-    assert(mcts.GreedyUCB(vnode1, true) == 3);
-
-    // With high counts, action with highest value is selected
-    VNODE* vnode2 = mcts.ExpandNode(testSimulator.CreateStartState());
-    vnode2->Value.Set(1, 0);
-    for (int action = 0; action < numAct; action++)
-        if (action == 3)
-            vnode2->Child(action).Value.Set(99 + numObs, 1);
-        else
-            vnode2->Child(action).Value.Set(100 + numAct - action, 0);
-    assert(mcts.GreedyUCB(vnode2, true) == 3);
-
-    // Action with low value and low count beats actions with high counts
-    VNODE* vnode3 = mcts.ExpandNode(testSimulator.CreateStartState());
-    vnode3->Value.Set(1, 0);
-    for (int action = 0; action < numAct; action++)
-        if (action == 3)
-            vnode3->Child(action).Value.Set(1, 1);
-        else
-            vnode3->Child(action).Value.Set(100 + action, 1);
-    assert(mcts.GreedyUCB(vnode3, true) == 3);
-
-    // Actions with zero count is always selected
-    VNODE* vnode4 = mcts.ExpandNode(testSimulator.CreateStartState());
-    vnode4->Value.Set(1, 0);
-    for (int action = 0; action < numAct; action++)
-        if (action == 3)
-            vnode4->Child(action).Value.Set(0, 0);
-        else
-            vnode4->Child(action).Value.Set(1, 1);
-    assert(mcts.GreedyUCB(vnode4, true) == 3);
-}
-
-void MCTS::UnitTestRollout()
-{
-    TEST_SIMULATOR testSimulator(2, 2, 0);
-    PARAMS params;
-    params.NumSimulations = 1000;
-    params.MaxDepth = 10;
-    MCTS mcts(testSimulator, params);
-    double totalReward;
-    for (int n = 0; n < mcts.Params.NumSimulations; ++n)
-    {
-        STATE* state = testSimulator.CreateStartState();
-        mcts.TreeDepth = 0;
-        totalReward += mcts.Rollout(*state);
-    }
-    double rootValue = totalReward / mcts.Params.NumSimulations;
-    double meanValue = testSimulator.MeanValue();
-    assert(fabs(meanValue - rootValue) < 0.1);
-}
-
-void MCTS::UnitTestSearch(int depth)
-{
-    TEST_SIMULATOR testSimulator(3, 2, depth);
-    PARAMS params;
-    params.MaxDepth = depth + 1;
-    params.NumSimulations = pow(10, depth + 1);
-    MCTS mcts(testSimulator, params);
-    mcts.UCTSearch();
-    double rootValue = mcts.Root->Value.GetValue();
-    double optimalValue = testSimulator.OptimalValue();
-    assert(fabs(optimalValue - rootValue) < 0.1);
-}
 
 //-----------------------------------------------------------------------------
 
-double MCTS::SimulateV(STATE& state, VNODE* vnode)
-{
-    int action = GreedyUCB(vnode, true);
-
-    PeakTreeDepth = TreeDepth;
-    if (TreeDepth >= Params.MaxDepth) // search horizon reached
-        return 0;
-
-    if (TreeDepth == 1)
-        AddSample(vnode, state);
-
-    QNODE& qnode = vnode->Child(action);
-    double totalReward = SimulateQ(state, qnode, action);
-    vnode->Value.Add(totalReward);
-    AddRave(vnode, totalReward);
-    return totalReward;
-}
-
-double MCTS::SimulateQ(STATE& state, QNODE& qnode, int action)
-{
-
-    int observation;
-    double immediateReward, delayedReward = 0;
-
-    if (Simulator.HasAlpha())
-        Simulator.UpdateAlpha(qnode, state);
-    bool terminal = Simulator.Step(state, action, observation, immediateReward);
-    assert(observation >= 0 && observation < Simulator.GetNumObservations());
-
-    History.Add(action, observation);
-
-    if (Params.Verbose >= 3)
-    {
-        Simulator.DisplayAction(action, cout);
-        Simulator.DisplayObservation(state, observation, cout);
-        Simulator.DisplayReward(immediateReward, cout);
-        Simulator.DisplayState(state, cout);
-    }
-
-    VNODE*& vnode = qnode.Child(observation);
-
-    if (!vnode && !terminal && qnode.Value.GetCount() >= Params.ExpandCount)
-        vnode = ExpandNode(&state);
-
-    if (!terminal)
-    {
-        TreeDepth++;
-        if (vnode)
-            delayedReward = SimulateV(state, vnode);
-        else
-            delayedReward = Rollout(state);
-        TreeDepth--;
-    }
-
-    double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
-    qnode.Value.Add(totalReward);
-    return totalReward;
-}
 
 
 void MCTS::DisplayValue(int depth, ostream& ostr) const
@@ -728,43 +563,7 @@ int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const
     return besta[Random(besta.size())];
 }
 
-double MCTS::Rollout(STATE& state)
-{
-    Status.Phase = SIMULATOR::STATUS::ROLLOUT;
-    if (Params.Verbose >= 3)
-        cout << "Starting rollout" << endl;
 
-    double totalReward = 0.0;
-    double discount = 1.0;
-    bool terminal = false;
-    int numSteps;
-    for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal; ++numSteps)
-    {
-        int observation;
-        double reward;
-
-        int action = Simulator.SelectRandom(state, History, Status);
-        terminal = Simulator.Step(state, action, observation, reward);
-        History.Add(action, observation);
-
-        if (Params.Verbose >= 4)
-        {
-            Simulator.DisplayAction(action, cout);
-            Simulator.DisplayObservation(state, observation, cout);
-            Simulator.DisplayReward(reward, cout);
-            Simulator.DisplayState(state, cout);
-        }
-
-        totalReward += reward * discount;
-        discount *= Simulator.GetDiscount();
-    }
-
-    StatRolloutDepth.Add(numSteps);
-    if (Params.Verbose >= 3)
-        cout << "Ending rollout after " << numSteps
-            << " steps, with total reward " << totalReward << endl;
-    return totalReward;
-}
 
 void MCTS::RolloutSearch()
 {
@@ -781,6 +580,8 @@ void MCTS::RolloutSearch()
         STATE* state = Root->Beliefs().CreateSample(Simulator);
         Simulator.Validate(*state);
 
+        BAG bag = generateInitialBag(state, BeliefState());
+
         int observation;
         double immediateReward, delayedReward, totalReward;
         bool terminal = Simulator.Step(*state, action, observation, immediateReward);
@@ -792,8 +593,8 @@ void MCTS::RolloutSearch()
             AddSample(vnode, *state);
         }   
         History.Add(action, observation);
-
-        delayedReward = Rollout(*state);
+        //delayedReward = Rollout(*state);
+        delayedReward = Rho_Rollout(*state, bag);
         totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
         Root->Child(action).Value.Add(totalReward);
 
@@ -802,16 +603,3 @@ void MCTS::RolloutSearch()
     }
 }
 
-
-long long MCTS::printmem()
-{
-    struct sysinfo memInfo;
-
-    sysinfo (&memInfo);
-    long long totalVirtualMem = memInfo.totalram;
-    //Add other values in next statement to avoid int overflow on right hand side...
-    totalVirtualMem += memInfo.totalswap;
-    totalVirtualMem *= memInfo.mem_unit;
-    return memInfo.freeram;
-    //cout << " meminfo.freeram " << memInfo.freeram << endl;
-}

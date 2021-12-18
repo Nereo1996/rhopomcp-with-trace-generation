@@ -31,11 +31,14 @@ public:
     virtual STATE* Copy(const STATE& state) const;
     virtual void DisplayState(const STATE& state, std::ostream& ostr) const;
 
-    virtual void DisplayBeliefs(const BELIEF_STATE& beliefState, std::ostream& ostr) const;
+    virtual void DisplayBeliefs(const BAG& beliefState, std::ostream& ostr) const;
     virtual void DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const;
 
     virtual int reward(const STATE& state, int action) const;
     virtual int observation(STATE& state, int action) const;
+
+    virtual double Rho_reward(const BAG& belief, int action) const;
+    virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
 
 };
 

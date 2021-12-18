@@ -3,7 +3,7 @@
 
 #include "history.h"
 #include "bag.h"
-#include "beliefstate.h"
+//#include "beliefstate.h"
 #include "node.h"
 #include "utils.h"
 #include <iostream>
@@ -121,7 +121,7 @@ public:
     virtual void UpdateAlpha(QNODE& qnode, const STATE& state) const;
 
     // Textual display
-    virtual void DisplayBeliefs(const BELIEF_STATE& beliefState, 
+    virtual void DisplayBeliefs(const BAG& beliefState, 
         std::ostream& ostr) const;
     virtual void DisplayState(const STATE& state, std::ostream& ostr) const;
     virtual void DisplayAction(int action, std::ostream& ostr) const;
