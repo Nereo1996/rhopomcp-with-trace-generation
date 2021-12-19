@@ -112,13 +112,6 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     if(PRINT_VALUES){
         cout << "bag dopo aver fatto un passo" << endl;
         Root->Beliefs().Display(std::cout, Simulator);
-        cout << "bag NORMALIZZATA" << endl;
-        BAG s;
-        s.Copy(Root->Beliefs(),Simulator);
-        s.normalize();
-        s.Display(cout,Simulator);
-        s.Free(Simulator);
-        ///Simulator.DisplayBeliefs(Root->Beliefs(),std::cout);
     }  
 
     return true;
@@ -140,7 +133,6 @@ void MCTS::UCTSearch()
     int historyDepth = History.Size();
 
     //SEARCH in rhopomcp
-    Root->Beliefs().normalize();
     for (int n = 0; n < Params.NumSimulations; n++)    
     {
         STATE* state = BeliefState().CreateSample(Simulator);
@@ -248,29 +240,21 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
     betaprime.Free(Simulator);
 
 
-    BAG rewardbag;
-    rewardbag.AddSample(Simulator, prev);
-    rewardbag.normalize();
-    immediateReward = Simulator.Rho_reward(rewardbag, action);
+    immediateReward = Simulator.Rho_reward(prev, action);
     double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
     qnode.Value.Add(totalReward);
-    rewardbag.Free(Simulator);
     return totalReward;
 }
 
 
 BAG MCTS::CreateBag_beta(const STATE& previous, int action, int observation, const BAG &bag, const STATE &next){
     BAG generatedBag;
-    BAG normalized_belief;
-
-    normalized_belief.Copy(bag, Simulator);
-    normalized_belief.normalize();
 
     double tmp =0;
     int temp_obs = 0;
     for (int i =0; i < NUM_PARTICLES; i++){
         //simulate
-        STATE* state = normalized_belief.CreateSample(Simulator); 
+        STATE* state = bag.CreateSample(Simulator); 
         STATE* previous_state = Simulator.Copy(*state);
         Simulator.Step(*state, action, temp_obs, tmp);
         double probability =
@@ -291,7 +275,6 @@ BAG MCTS::CreateBag_beta(const STATE& previous, int action, int observation, con
     if (generatedBag.Empty())
         cout << "no particles in the generated BAG" << endl;
 
-    normalized_belief.Free(Simulator); //in teoria va liberato
     return generatedBag;
 }
 
@@ -327,8 +310,6 @@ double MCTS::Rho_Rollout(STATE& state, BAG &beta)
     bool terminal = false;
     int numSteps;
 
-    BAG current_bag;
-    current_bag.AddSample(Simulator, beta);
     for (numSteps = 0; numSteps + TreeDepth < Params.MaxDepth && !terminal; ++numSteps)
     {
         int observation;
@@ -341,7 +322,7 @@ double MCTS::Rho_Rollout(STATE& state, BAG &beta)
         History.Add(action, observation);
 
         BAG betaprime =
-            CreateBag_beta(*previous_state, action, observation, current_bag, state);
+            CreateBag_beta(*previous_state, action, observation, beta, state);
 
         if (Params.Verbose >= 4)
         {
@@ -351,13 +332,12 @@ double MCTS::Rho_Rollout(STATE& state, BAG &beta)
             Simulator.DisplayState(state, cout);
         }
 
-        current_bag.normalize();
-        reward = Simulator.Rho_reward(current_bag, action);
+        reward = Simulator.Rho_reward(beta, action);
 
         totalReward += reward * discount;
         discount *= Simulator.GetDiscount();
 
-        current_bag.Move(betaprime, Simulator);
+        beta.Move(betaprime, Simulator);
     }
 
     StatRolloutDepth.Add(numSteps);

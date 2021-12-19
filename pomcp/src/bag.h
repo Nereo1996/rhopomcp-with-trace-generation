@@ -45,21 +45,23 @@ public:
 
     //ritorna il peso associato all'elemento
     double GetWeight(int index) const{ return weight[index]; }
+
+    //ritorna il peso normalizzato associato all'elemento
+    double GetNormalizedWeight(int index) const{ return weight[index]/totalWeight; }
+
+
     
     void printInsert(){std::cout << "n. insert: " << insert << std::endl;}
-
-    //normalizza i pesi
-    void normalize();
-    bool is_normalized() const { return normalized; }
 
     int ParticlePosition(const STATE& state) const;
 
 private:
     static constexpr bool count = false;
-    bool normalized;
+    double totalWeight;
     int insert = 0;
     std::vector<STATE*> Particles;
     std::vector<double> weight; 
+
 };
 
 #endif // BAG_H
