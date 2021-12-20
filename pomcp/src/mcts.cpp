@@ -96,9 +96,9 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     // Find a state to initialise prior (only requires fully observed state)
     const STATE* state = 0;
     if (vnode && !vnode->Beliefs().Empty())
-        state = &vnode->Beliefs().GetSample(0);
+        state = &vnode->Beliefs().GetFirstSample();
     else
-        state = &belief.GetSample(0);
+        state = &belief.GetFirstSample();
 
     // Delete old tree and create new root
     VNODE::Free(Root, Simulator);
@@ -552,12 +552,14 @@ void MCTS::RolloutSearch()
     int historyDepth = History.Size();
     std::vector<int> legal;
     assert(BeliefState().GetNumSamples() > 0);
-    Simulator.GenerateLegal(BeliefState().GetSample(0), GetHistory(), legal, GetStatus());
+    Simulator.GenerateLegal(BeliefState().GetFirstSample(), GetHistory(), legal, GetStatus());
     random_shuffle(legal.begin(), legal.end());
 
     for (int i = 0; i < Params.NumSimulations; i++){
         int action = legal[i % legal.size()];
         STATE* state = Root->Beliefs().CreateSample(Simulator);
+                cout << "validate rolloutsearch " << endl; 
+
         Simulator.Validate(*state);
 
         BAG bag = generateInitialBag(state, BeliefState());

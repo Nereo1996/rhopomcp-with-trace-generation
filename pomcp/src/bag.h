@@ -3,9 +3,11 @@
 
 #include <vector>
 #include <iostream>
+#include <unordered_map>
 
 class STATE;
 class SIMULATOR;
+
 
 class BAG
 {
@@ -35,32 +37,31 @@ public:
     void Display(std::ostream& ostr, const SIMULATOR& simulator) const;
 
     //controlla se la bag contiene qualche elemento
-    bool Empty() const { return Particles.empty(); }
+    bool Empty() const { return container.empty(); }
 
     //numero di elementi in una bag
-    int GetNumSamples() const { return Particles.size(); }
+     int GetNumSamples() const { return container.size(); }
 
     //ritorna l'elemento in posizione index della bag
-    const STATE &GetSample(int index) const { return *Particles[index]; }
-
-    //ritorna il peso associato all'elemento
-    double GetWeight(int index) const{ return weight[index]; }
+    const STATE &GetFirstSample() const { return *container.begin()->first; }
 
     //ritorna il peso normalizzato associato all'elemento
-    double GetNormalizedWeight(int index) const{ return weight[index]/totalWeight; }
+    double GetNormalizedWeight(STATE* state) const{ return container.at(state)/totalWeight; }
 
+    //ritorna l'intera bag
+    const std::unordered_map<STATE*,double> getContainer() const{ return container;}
 
-    
     void printInsert(){std::cout << "n. insert: " << insert << std::endl;}
 
-    int ParticlePosition(const STATE& state) const;
 
 private:
     static constexpr bool count = false;
     double totalWeight;
     int insert = 0;
-    std::vector<STATE*> Particles;
-    std::vector<double> weight; 
+    std::unordered_map<STATE*,double> container;
+
+
+
 
 };
 

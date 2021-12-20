@@ -272,7 +272,7 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
 
 void ROCKSAMPLE::Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) const{
 
-        reward = reward * beliefs.GetWeight(pos);
+        //reward = reward * beliefs.GetNormalizedWeight(pos);
 }
 
 
