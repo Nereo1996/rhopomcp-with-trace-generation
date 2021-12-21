@@ -4,6 +4,8 @@
 #include "sys/types.h"
 #include "sys/sysinfo.h"
 
+
+
 using namespace std;
 using namespace UTILS;
 
@@ -239,8 +241,7 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
     }
     betaprime.Free(Simulator);
 
-
-    immediateReward = Simulator.Rho_reward(prev, action);
+    immediateReward = Simulator.Rho_reward(prev, action,state);
     double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
     qnode.Value.Add(totalReward);
     return totalReward;
@@ -332,7 +333,7 @@ double MCTS::Rho_Rollout(STATE& state, BAG &beta)
             Simulator.DisplayState(state, cout);
         }
 
-        reward = Simulator.Rho_reward(beta, action);
+        reward = Simulator.Rho_reward(beta, action,state);
 
         totalReward += reward * discount;
         discount *= Simulator.GetDiscount();
@@ -510,7 +511,7 @@ int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const
         q = qnode.Value.GetValue();
         n = qnode.Value.GetCount();
 
-        //cout << "UCB " << action << " " <<  n << " " <<  q << endl;
+        //cout << "UCB " << action << " " <<  n << " " <<  q << " bestq:" << bestq <<endl;
 
         if (Params.UseRave && qnode.AMAF.GetCount() > 0)
         {
@@ -558,7 +559,6 @@ void MCTS::RolloutSearch()
     for (int i = 0; i < Params.NumSimulations; i++){
         int action = legal[i % legal.size()];
         STATE* state = Root->Beliefs().CreateSample(Simulator);
-                cout << "validate rolloutsearch " << endl; 
 
         Simulator.Validate(*state);
 

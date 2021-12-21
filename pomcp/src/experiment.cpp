@@ -62,7 +62,7 @@ void EXPERIMENT::Run()
         int action = mcts.SelectAction();
 
 
-        //std::cout << "azione migliore secondo la simulazione mcts:" << action << std::endl;
+        std::cout << "azione migliore secondo la simulazione mcts:" << action << std::endl;
         terminal = Real.Step(*state, action, observation, reward);
         //reward = Simulator.RhoReward(state, ,action);
         Results.Reward.Add(reward);

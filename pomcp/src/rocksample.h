@@ -54,7 +54,10 @@ public:
     virtual void DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const;
     virtual void DisplayAction(int action, std::ostream& ostr) const;
 
-    virtual void Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) const;
+
+    //virtual int reward(const STATE& state, int action) const;
+    virtual double Rho_reward(const BAG& belief, int action, STATE& state) const;
+
     virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
 
 protected:

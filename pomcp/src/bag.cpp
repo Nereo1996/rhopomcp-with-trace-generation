@@ -87,7 +87,7 @@ void BAG::Move(BAG& b, const SIMULATOR& simulator) {
 
 void BAG::Display(std::ostream& ostr, const SIMULATOR& simulator) const{
 
-    if(container.empty())
+    if(Empty())
         return;
 
     ostr << "bag: \n";

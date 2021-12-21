@@ -268,19 +268,112 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
     return false;
 }
 
+/*
+int ROCKSAMPLE::reward(const STATE& state, int action) const{
+    const ROCKSAMPLE_STATE& rockstate = safe_cast<const ROCKSAMPLE_STATE&>(state);
+
+    if (action < E_SAMPLE){ // move
+        switch (action){
+            case COORD::E_EAST:
+                if (!(rockstate.AgentPos.X + 1 < Size))
+                    return +10;
+            case COORD::E_NORTH:
+                if (!(rockstate.AgentPos.Y + 1 < Size))
+                    return -100;
+            case COORD::E_SOUTH:
+                if (!(rockstate.AgentPos.Y - 1 >= 0))
+                    return -100;
+            case COORD::E_WEST:
+                if (!(rockstate.AgentPos.X - 1 >= 0))
+                    return -100;
+        }
+    }
 
 
-void ROCKSAMPLE::Rho_reward(STATE& s, BAG& beliefs, double& reward, int pos) const{
 
-        //reward = reward * beliefs.GetNormalizedWeight(pos);
+    if (action == E_SAMPLE){ // sample
+        int rock = Grid(rockstate.AgentPos);
+        if (rock >= 0 && !rockstate.Rocks[rock].Collected){
+            if (rockstate.Rocks[rock].Valuable)
+                return +10;
+            else
+                return -10;
+        }
+        else
+            return -100;
+    }
+
+
+    //check == no reward
+    return 0;}
+*/
+
+double ROCKSAMPLE::Rho_reward(const BAG& belief, int action, STATE& state) const{
+
+
+        if(action == E_SAMPLE){ //sample
+            int rock = action - E_SAMPLE - 1;
+            assert(rock < NumRocks);
+            double r = 0;
+            for (auto& element : belief.getContainer()){
+                const ROCKSAMPLE_STATE& s = safe_cast<const ROCKSAMPLE_STATE&>(*element.first);
+
+                 if(s.Rocks[rock].Valuable)
+                    r= r* element.second * (+10);
+                else
+                    r = r* element.second * (-10);
+            }
+               
+            return r;
+        }
+
+        if (action < E_SAMPLE){ // move
+        ROCKSAMPLE_STATE& rockstate = safe_cast< ROCKSAMPLE_STATE&>(state);
+        switch (action){
+            case COORD::E_EAST:
+                if (!(rockstate.AgentPos.X + 1 < Size))
+                    return +10.0;
+            case COORD::E_NORTH:
+                if (!(rockstate.AgentPos.Y + 1 < Size))
+                    return -100.0;
+            case COORD::E_SOUTH:
+                if (!(rockstate.AgentPos.Y - 1 >= 0))
+                    return -100.0;
+            case COORD::E_WEST:
+                if (!(rockstate.AgentPos.X - 1 >= 0))
+                    return -100.0;
+        }
+    }
+
+    //check == no reward
+    return 0.0;
+
 }
 
 
 double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const{
+
+    if (action <= E_SAMPLE){ //se l'azione è di movimento o di sample (quindi azione non di check)
+        assert(observation == E_NONE); //l'osservazione non ci deve essere il 100% delle volte (== 1.0 di probabilità)
+        return 1.0;
+
+    } 
+
+
+    //azione di check
     const ROCKSAMPLE_STATE startRSstate = static_cast<const ROCKSAMPLE_STATE&>(startingState);
     const ROCKSAMPLE_STATE finalRSstate = static_cast<const ROCKSAMPLE_STATE&>(finalState);
-    // TODO
-    return 0.0;
+    
+    int rock = action - E_SAMPLE - 1;
+    assert(rock < NumRocks);
+
+    double distance = COORD::EuclideanDistance(startRSstate.AgentPos, RockPos[rock]);
+    double efficiency = (1 + pow(2, -distance / HalfEfficiencyDistance)) * 0.5;
+
+    if(observation == E_GOOD)
+        return efficiency;
+    else
+        return 1- efficiency;
 }
 
 
