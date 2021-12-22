@@ -54,8 +54,7 @@ void BAG::AddSample(const SIMULATOR& simulator, const STATE &particle, double pe
         }
     }
     if(is_new){
-        STATE* support = const_cast <STATE*> (&particle);
-        container.insert({simulator.Copy(*support),peso});
+        container.insert({simulator.Copy(particle),peso});
     }
 
     totalWeight += peso;

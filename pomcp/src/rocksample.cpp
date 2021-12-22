@@ -310,7 +310,6 @@ int ROCKSAMPLE::reward(const STATE& state, int action) const{
 
 double ROCKSAMPLE::Rho_reward(const BAG& belief, int action, STATE& state) const{
 
-
         if(action == E_SAMPLE){ //sample
             int rock = action - E_SAMPLE - 1;
             assert(rock < NumRocks);
@@ -318,7 +317,7 @@ double ROCKSAMPLE::Rho_reward(const BAG& belief, int action, STATE& state) const
             for (auto& element : belief.getContainer()){
                 const ROCKSAMPLE_STATE& s = safe_cast<const ROCKSAMPLE_STATE&>(*element.first);
 
-                 if(s.Rocks[rock].Valuable)
+                if(s.Rocks[rock].Valuable)
                     r= r* element.second * (+10);
                 else
                     r = r* element.second * (-10);
@@ -354,11 +353,8 @@ double ROCKSAMPLE::Rho_reward(const BAG& belief, int action, STATE& state) const
 double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const{
 
     if (action <= E_SAMPLE){ //se l'azione è di movimento o di sample (quindi azione non di check)
-        assert(observation == E_NONE); //l'osservazione non ci deve essere il 100% delle volte (== 1.0 di probabilità)
-        return 1.0;
-
+        return observation == E_NONE ? 1.0 : 0.0;
     } 
-
 
     //azione di check
     const ROCKSAMPLE_STATE startRSstate = static_cast<const ROCKSAMPLE_STATE&>(startingState);
@@ -370,10 +366,10 @@ double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int acti
     double distance = COORD::EuclideanDistance(startRSstate.AgentPos, RockPos[rock]);
     double efficiency = (1 + pow(2, -distance / HalfEfficiencyDistance)) * 0.5;
 
-    if(observation == E_GOOD)
-        return efficiency;
+    if(startRSstate.Rocks[rock].Valuable)
+        return observation == E_GOOD ? efficiency : 1- efficiency;
     else
-        return 1- efficiency;
+        return observation == E_BAD? efficiency : 1 - efficiency;
 }
 
 
