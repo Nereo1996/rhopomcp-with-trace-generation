@@ -49,7 +49,7 @@ public:
     double GetNormalizedWeight(STATE* state) const{ return container.at(state)/totalWeight; }
 
     //ritorna l'intera bag
-    const std::unordered_map<STATE*,double> getContainer() const{ return container;}
+    const std::unordered_map<STATE*,double> &getContainer() const{ return container;}
 
     void printInsert(){std::cout << "n. insert: " << insert << std::endl;}
 

@@ -53,8 +53,8 @@ void EXPERIMENT::Run()
     STATE* state = Real.CreateStartState();
     if (SearchParams.Verbose >= 1)
         Real.DisplayState(*state, cout);
-    //for (t = 0; t < ExpParams.NumSteps; t++)
-    for (t = 0; t < 10; t++)
+    for (t = 0; t < ExpParams.NumSteps; t++)
+    //for (t = 0; t < 10; t++)
     {
         //std::cout << "step numero :" << t << std::endl;
         int observation;

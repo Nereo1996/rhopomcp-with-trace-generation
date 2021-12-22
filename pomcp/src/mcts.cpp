@@ -11,7 +11,7 @@ using namespace UTILS;
 
 //-----------------------------------------------------------------------------
 
-static constexpr int NUM_PARTICLES = 100;
+static constexpr int NUM_PARTICLES = 50;
 static constexpr bool PRINT_VALUES = false;
 static constexpr bool PRINT_IT = false;
 static constexpr bool PRINT_DEBUG_TREE = false;
