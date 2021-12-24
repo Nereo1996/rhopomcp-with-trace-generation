@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     EXPERIMENT::PARAMS expParams;
     SIMULATOR::KNOWLEDGE knowledge;
     string problem, outputfile, policy;
-    int size, number, treeknowledge = 1, rolloutknowledge = 1, smarttreecount = 10;
+    int size, number,bagsize, treeknowledge = 1, rolloutknowledge = 1, smarttreecount = 10;
     double smarttreevalue = 1.0;
 
     options_description desc("Allowed options");
@@ -64,6 +64,8 @@ int main(int argc, char* argv[])
         ("smarttreecount", value<int>(&knowledge.SmartTreeCount), "Prior count for preferred actions during smart tree search")
         ("smarttreevalue", value<double>(&knowledge.SmartTreeValue), "Prior value for preferred actions during smart tree search")
         ("disabletree", value<bool>(&searchParams.DisableTree), "Use 1-ply rollout action selection")
+        ("bagsize", value<int>(&searchParams.bagsize), "size of bags)")
+
         ;
 
     variables_map vm;

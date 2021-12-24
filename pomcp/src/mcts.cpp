@@ -11,7 +11,6 @@ using namespace UTILS;
 
 //-----------------------------------------------------------------------------
 
-static constexpr int NUM_PARTICLES = 50;
 static constexpr bool PRINT_VALUES = false;
 static constexpr bool PRINT_IT = false;
 static constexpr bool PRINT_DEBUG_TREE = false;
@@ -29,6 +28,7 @@ MCTS::PARAMS::PARAMS() :
     UseRave(false),
     RaveDiscount(1.0),
     RaveConstant(0.01),
+    bagsize(50),
     DisableTree(false)
 {
 }
@@ -66,7 +66,6 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
 {
     History.Add(action, observation);
     BAG belief;
-    BAG bag;
 
     // Find matching vnode from the rest of the tree
     QNODE& qnode = Root->Child(action);
@@ -106,7 +105,7 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     VNODE::Free(Root, Simulator);
 
     VNODE* newRoot = ExpandNode(state);
-    newRoot->Beliefs() = belief;
+    newRoot->Beliefs().Move(belief,Simulator);
 
     Root = newRoot;
     //Root->Bags().printInsert(); //funzione che conta il numero di insert che vengono fatte nella bag
@@ -226,7 +225,7 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
 
     if (TreeDepth > 1)
         prev.AddSample(Simulator, beta);
-    //beta.Free(Simulator);
+    beta.Free(Simulator);
 
     Simulator.FreeState(previous_state);
 
@@ -241,7 +240,7 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
     }
     betaprime.Free(Simulator);
 
-    immediateReward = Simulator.Rho_reward(prev, action,state);
+    immediateReward = Simulator.Rho_reward(prev, action);
     double totalReward = immediateReward + Simulator.GetDiscount() * delayedReward;
     qnode.Value.Add(totalReward);
     return totalReward;
@@ -253,7 +252,7 @@ BAG MCTS::CreateBag_beta(const STATE& previous, int action, int observation, con
 
     double tmp =0;
     int temp_obs = 0;
-    for (int i =0; i < NUM_PARTICLES; i++){
+    for (int i =0; i < Params.bagsize; i++){
         //simulate
         STATE* state = bag.CreateSample(Simulator); 
         STATE* previous_state = Simulator.Copy(*state);
@@ -286,7 +285,7 @@ BAG MCTS::generateInitialBag(STATE* state, const BAG& initialBelief) {
     if (initialBelief.Empty())
         return bag;
 
-    for (int i = 0; i < NUM_PARTICLES; i++) {
+    for (int i = 0; i < Params.bagsize; i++) {
         STATE* sampledS = initialBelief.CreateSample(Simulator);
         bag.AddSample(Simulator, *sampledS);
         Simulator.FreeState(sampledS);
@@ -325,6 +324,8 @@ double MCTS::Rho_Rollout(STATE& state, BAG &beta)
         BAG betaprime =
             CreateBag_beta(*previous_state, action, observation, beta, state);
 
+        Simulator.FreeState(previous_state);
+
         if (Params.Verbose >= 4)
         {
             Simulator.DisplayAction(action, cout);
@@ -333,7 +334,7 @@ double MCTS::Rho_Rollout(STATE& state, BAG &beta)
             Simulator.DisplayState(state, cout);
         }
 
-        reward = Simulator.Rho_reward(beta, action,state);
+        reward = Simulator.Rho_reward(beta, action);
 
         totalReward += reward * discount;
         discount *= Simulator.GetDiscount();

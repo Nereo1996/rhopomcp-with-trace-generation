@@ -268,8 +268,9 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
     return false;
 }
 
-/*
+
 int ROCKSAMPLE::reward(const STATE& state, int action) const{
+
     const ROCKSAMPLE_STATE& rockstate = safe_cast<const ROCKSAMPLE_STATE&>(state);
 
     if (action < E_SAMPLE){ // move
@@ -289,8 +290,6 @@ int ROCKSAMPLE::reward(const STATE& state, int action) const{
         }
     }
 
-
-
     if (action == E_SAMPLE){ // sample
         int rock = Grid(rockstate.AgentPos);
         if (rock >= 0 && !rockstate.Rocks[rock].Collected){
@@ -305,47 +304,18 @@ int ROCKSAMPLE::reward(const STATE& state, int action) const{
 
 
     //check == no reward
-    return 0;}
-*/
+    return 0;
+}
 
-double ROCKSAMPLE::Rho_reward(const BAG& belief, int action, STATE& state) const{
 
-        if(action == E_SAMPLE){ //sample
-            int rock = action - E_SAMPLE - 1;
-            assert(rock < NumRocks);
-            double r = 0;
-            for (auto& element : belief.getContainer()){
-                const ROCKSAMPLE_STATE& s = safe_cast<const ROCKSAMPLE_STATE&>(*element.first);
-
-                if(s.Rocks[rock].Valuable)
-                    r= r* element.second * (+10);
-                else
-                    r = r* element.second * (-10);
-            }
-               
-            return r;
-        }
-
-        if (action < E_SAMPLE){ // move
-        ROCKSAMPLE_STATE& rockstate = safe_cast< ROCKSAMPLE_STATE&>(state);
-        switch (action){
-            case COORD::E_EAST:
-                if (!(rockstate.AgentPos.X + 1 < Size))
-                    return +10.0;
-            case COORD::E_NORTH:
-                if (!(rockstate.AgentPos.Y + 1 < Size))
-                    return -100.0;
-            case COORD::E_SOUTH:
-                if (!(rockstate.AgentPos.Y - 1 >= 0))
-                    return -100.0;
-            case COORD::E_WEST:
-                if (!(rockstate.AgentPos.X - 1 >= 0))
-                    return -100.0;
-        }
+double ROCKSAMPLE::Rho_reward(const BAG& belief, int action) const{
+    double r = 0;
+    for (auto& element : belief.getContainer()){
+        r += reward(*element.first,action) * belief.GetNormalizedWeight(element.first);
     }
 
-    //check == no reward
-    return 0.0;
+    return r;
+      
 
 }
 

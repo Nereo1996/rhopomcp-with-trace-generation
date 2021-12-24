@@ -55,8 +55,8 @@ public:
     virtual void DisplayAction(int action, std::ostream& ostr) const;
 
 
-    //virtual int reward(const STATE& state, int action) const;
-    virtual double Rho_reward(const BAG& belief, int action, STATE& state) const;
+    virtual int reward(const STATE& state, int action) const;
+    virtual double Rho_reward(const BAG& belief, int action) const;
 
     virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
 

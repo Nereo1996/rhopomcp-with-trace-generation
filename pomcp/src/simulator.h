@@ -152,7 +152,7 @@ public:
     };
 
     //assegnamento reward caso rho
-    virtual double Rho_reward(const BAG& , int, const STATE&) const {
+    virtual double Rho_reward(const BAG& , int) const {
         assert(false); // not implemented
         return 0.0;
     };

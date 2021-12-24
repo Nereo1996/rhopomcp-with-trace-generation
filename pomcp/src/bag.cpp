@@ -38,14 +38,7 @@ STATE* BAG::CreateSample(const SIMULATOR& simulator) const{
 void BAG::AddSample(const SIMULATOR& simulator, const STATE &particle, double peso) {
     if (count) insert++;
     bool is_new = true;
-    /*
-    if(container.contains(support)){
-        container[support] += peso;
-    }
-    else{
-        container.insert({simulator.Copy(*support),peso});
-    }
-    */
+  
     for (auto& element : container){
         if(element.first->isEqual(particle)){
             is_new = false;
@@ -65,7 +58,6 @@ void BAG::AddSample(const SIMULATOR& simulator, const BAG &beta) {
     for (auto& element : beta.getContainer()){
         AddSample(simulator,*element.first,element.second);
     }
-
 }
 
 void BAG::Copy(const BAG& bag, const SIMULATOR& simulator) {
@@ -81,6 +73,7 @@ void BAG::Copy(const BAG& bag, const SIMULATOR& simulator) {
 void BAG::Move(BAG& b, const SIMULATOR& simulator) {
     std::swap(container, b.container);
     std::swap(totalWeight, b.totalWeight);
+    
     b.Free(simulator);
 }
 

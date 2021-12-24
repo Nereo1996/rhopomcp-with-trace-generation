@@ -27,6 +27,7 @@ public:
         double RaveDiscount;
         double RaveConstant;
         bool DisableTree;
+        int bagsize;
     };
 
     MCTS(const SIMULATOR& simulator, const PARAMS& params);

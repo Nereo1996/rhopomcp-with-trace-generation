@@ -126,7 +126,7 @@ void Tiger::DisplayState(const STATE& state, std::ostream& ostr) const{
 
 
 
-double Tiger::Rho_reward(const BAG& belief, int action,const STATE&) const {
+double Tiger::Rho_reward(const BAG& belief, int action) const {
     //assert(belief.is_normalized());
     double r = 0;
     /*for (int i = 0; i < belief.GetNumSamples(); i++) {

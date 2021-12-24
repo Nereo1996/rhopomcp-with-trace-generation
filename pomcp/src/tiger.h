@@ -37,7 +37,7 @@ public:
     virtual int reward(const STATE& state, int action) const;
     virtual int observation(STATE& state, int action) const;
 
-    virtual double Rho_reward(const BAG& belief, int action,const STATE&) const;
+    virtual double Rho_reward(const BAG& belief, int action) const;
     virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
 
 };
