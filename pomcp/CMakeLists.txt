@@ -18,6 +18,7 @@ add_executable(pomcp
     ./src/simulator.cpp
     ./src/tiger.cpp
     ./src/utils.cpp
+    ./src/xes_logger.cpp
     )
 target_include_directories(pomcp PUBLIC ./src)
 target_link_libraries(pomcp LINK_PUBLIC ${Boost_LIBRARIES})

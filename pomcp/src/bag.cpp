@@ -36,7 +36,6 @@ STATE* BAG::CreateSample(const SIMULATOR& simulator) const{
 
 //aggiunge una particle alla bag
 void BAG::AddSample(const SIMULATOR& simulator, const STATE &particle, double peso) {
-    if (count) insert++;
     bool is_new = true;
   
     for (auto& element : container){

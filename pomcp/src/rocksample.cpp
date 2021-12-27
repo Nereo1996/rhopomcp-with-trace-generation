@@ -222,8 +222,10 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
         if (rock >= 0 && !rockstate.Rocks[rock].Collected)
         {
             rockstate.Rocks[rock].Collected = true;
-            if (rockstate.Rocks[rock].Valuable)
+            if (rockstate.Rocks[rock].Valuable){
+                //std::cout << "hai pigliato una pietra di valore!!" << std::endl;
                 reward = +10;
+            }
             else
                 reward = -10;
         }
@@ -311,6 +313,7 @@ int ROCKSAMPLE::reward(const STATE& state, int action) const{
 double ROCKSAMPLE::Rho_reward(const BAG& belief, int action) const{
     double r = 0;
     for (auto& element : belief.getContainer()){
+        //std::cout << "reward nel rho reward: " << reward(*element.first,action) << std::endl;
         r += reward(*element.first,action) * belief.GetNormalizedWeight(element.first);
     }
 
@@ -340,6 +343,7 @@ double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int acti
         return observation == E_GOOD ? efficiency : 1- efficiency;
     else
         return observation == E_BAD? efficiency : 1 - efficiency;
+
 }
 
 
@@ -602,3 +606,153 @@ void ROCKSAMPLE::DisplayAction(int action, std::ostream& ostr) const
     if (action > E_SAMPLE)
         ostr << "Check " << action - E_SAMPLE << endl;
 }
+
+
+
+
+//xes
+
+
+//va bene
+void ROCKSAMPLE::log_problem_info() const {
+    XES::logger().add_attributes({
+            {"problem", "rocksample"},
+            {"RewardRange", RewardRange},
+            {"HalfEfficiencyDistance", HalfEfficiencyDistance},
+            {"Size", Size},
+            {"NumRocks", NumRocks}
+        });
+
+    XES::logger().start_list("rocks");
+    for (int i = 0; i < RockPos.size(); i++) {
+        XES::logger().start_list("rock");
+        XES::logger().add_attributes({
+                {"number", i},
+                {"coord x", RockPos[i].X},
+                {"coord y", RockPos[i].Y},
+                });
+        XES::logger().end_list();
+    }
+    XES::logger().end_list(); // end rocks
+}
+
+
+
+//da rivedere bene
+void ROCKSAMPLE::log_beliefs(const BAG& beliefState) const {
+    std::unordered_map<std::string, int> dist;
+    
+    const STATE& s = safe_cast<const STATE&>(*beliefState.GetFirstSample());
+    auto* rstate = safe_cast<const ROCKSAMPLE_STATE*>(&s);
+
+    XES::logger().add_attribute({"coord x", rstate->AgentPos.X });
+    XES::logger().add_attribute({"coord y", rstate->AgentPos.Y });
+
+    XES::logger().start_list("belief");
+
+    for (auto& element : beliefState.getContainer()){
+        const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
+
+        std::string valrocks = "";
+        for(int i=0; i < NumRocks; i++){
+            if(rs->Rocks[NumRocks-i -1].Valuable)
+                valrocks += '1';
+            else
+                valrocks+= '0';
+        }
+
+
+        bool is_new = true;
+        for (auto& element : dist){
+            if(element.first == valrocks){
+                is_new = false;
+                element.second++;
+                break;
+            }
+        }
+        if(is_new){
+            dist.insert({valrocks,1});
+        }
+
+    }
+     for (const auto &[k, v] : dist)
+        XES::logger().add_attribute({k, v});
+
+
+    XES::logger().end_list();
+    
+}
+
+
+//va bene
+void ROCKSAMPLE::log_state(const STATE& state) const {
+    const ROCKSAMPLE_STATE& rs = safe_cast<const ROCKSAMPLE_STATE&>(state);
+    XES::logger().start_list("state");
+    XES::logger().add_attribute({"coord x", rs.AgentPos.X });
+    XES::logger().add_attribute({"coord y", rs.AgentPos.Y });
+    XES::logger().start_list("rocks");
+    int i = 0;
+    for (const auto &r : rs.Rocks) {
+        XES::logger().start_list("rock");
+        XES::logger().add_attributes({
+                {"number", i},
+                {"valuable", r.Valuable},
+                {"collected", r.Collected}
+                });
+        XES::logger().end_list();
+        ++i;
+    }
+    XES::logger().end_list(); // end rocks
+    XES::logger().end_list(); // end state
+}
+
+
+//va bene
+void ROCKSAMPLE::log_action(int action) const {
+    switch (action) {
+        case COORD::E_EAST:
+            XES::logger().add_attribute({"action", "east"});
+            return;
+
+        case COORD::E_NORTH:
+            XES::logger().add_attribute({"action", "north"});
+            return;
+
+        case COORD::E_SOUTH:
+            XES::logger().add_attribute({"action", "south"});
+            return;
+
+        case COORD::E_WEST:
+            XES::logger().add_attribute({"action", "west"});
+            return;
+        case E_SAMPLE:
+            XES::logger().add_attribute({"action", "sample"});
+            return;
+        default:
+            int rock = action - E_SAMPLE - 1;
+            XES::logger().add_attribute({"action", "check rock " + std::to_string(rock)});
+            return;
+    }
+}
+
+
+//va bene
+void ROCKSAMPLE::log_observation(const STATE& state, int observation) const {
+    switch (observation) {
+        case E_NONE:
+            XES::logger().add_attribute({"observation", "none"});
+            return;
+        case E_GOOD:
+            XES::logger().add_attribute({"observation", "good"});
+            return;
+        case E_BAD:
+            XES::logger().add_attribute({"observation", "bad"});
+            return;
+    }
+}
+
+//va bene
+void ROCKSAMPLE::log_reward(double reward) const {
+    XES::logger().add_attribute({"reward", reward});
+}
+

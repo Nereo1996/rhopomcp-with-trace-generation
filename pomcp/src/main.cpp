@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
     string problem, outputfile, policy;
     int size, number,bagsize, treeknowledge = 1, rolloutknowledge = 1, smarttreecount = 10;
     double smarttreevalue = 1.0;
+    bool xes_log = true;
 
     options_description desc("Allowed options");
     desc.add_options()
@@ -65,6 +66,7 @@ int main(int argc, char* argv[])
         ("smarttreevalue", value<double>(&knowledge.SmartTreeValue), "Prior value for preferred actions during smart tree search")
         ("disabletree", value<bool>(&searchParams.DisableTree), "Use 1-ply rollout action selection")
         ("bagsize", value<int>(&searchParams.bagsize), "size of bags)")
+        ("xes", value<bool>(&xes_log)->default_value(true), "Enable XES log");
 
         ;
 
@@ -93,6 +95,8 @@ int main(int argc, char* argv[])
 
     SIMULATOR* real = 0;
     SIMULATOR* simulator = 0;
+
+    XES::init(xes_log, "log.xes");
 
     if (problem == "rocksample")
     {

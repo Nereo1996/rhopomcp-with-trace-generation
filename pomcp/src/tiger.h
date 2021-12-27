@@ -37,8 +37,19 @@ public:
     virtual int reward(const STATE& state, int action) const;
     virtual int observation(STATE& state, int action) const;
 
+    //functions for rho parts
     virtual double Rho_reward(const BAG& belief, int action) const;
     virtual double ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const;
+
+    //functions for xes logging
+    virtual void log_problem_info() const;
+    virtual void log_beliefs(const BAG& beliefState) const;
+    virtual void log_state(const STATE& state) const;
+    virtual void log_action(int action) const;
+    //log observation: changed observation_t in int. idk if it's right at the moment.
+    virtual void log_observation(const STATE&, int observation) const;
+    virtual void log_reward(double reward) const;
+
 
 };
 

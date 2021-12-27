@@ -4,6 +4,7 @@
 #include "mcts.h"
 #include "simulator.h"
 #include "statistic.h"
+#include "XES_logger.h"
 #include <fstream>
 
 //----------------------------------------------------------------------------

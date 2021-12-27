@@ -2,9 +2,10 @@
 #define SIMULATOR_H
 
 #include "history.h"
-#include "bag.h"
-//#include "beliefstate.h"
 #include "node.h"
+#include "bag.h"
+#include "XES_logger.h"
+//#include "beliefstate.h"
 #include "utils.h"
 #include <iostream>
 #include <math.h>
@@ -15,7 +16,6 @@ class STATE : public MEMORY_OBJECT
 {
 public:
     virtual bool isEqual(const STATE &) const {return false;};
-    virtual void x(const STATE*) const {return;};
 };
 
 class SIMULATOR
@@ -127,6 +127,15 @@ public:
     virtual void DisplayAction(int action, std::ostream& ostr) const;
     virtual void DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const;
     virtual void DisplayReward(double reward, std::ostream& ostr) const;
+
+    // xes logging
+    virtual void log_problem_info() const {}
+    virtual void log_beliefs(const BAG& beliefState) const {}
+    virtual void log_state(const STATE& state) const {}
+    virtual void log_action(int action) const {}
+    //log observation: changed observation_t in int. idk if it's right at the moment.
+    virtual void log_observation(const STATE& state, int observation) const {}
+    virtual void log_reward(double reward) const {}    
 
     // Accessors
     void SetKnowledge(const KNOWLEDGE& knowledge) { Knowledge = knowledge; }

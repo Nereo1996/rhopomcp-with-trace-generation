@@ -97,9 +97,9 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     // Find a state to initialise prior (only requires fully observed state)
     const STATE* state = 0;
     if (vnode && !vnode->Beliefs().Empty())
-        state = &vnode->Beliefs().GetFirstSample();
+        state = vnode->Beliefs().GetFirstSample();
     else
-        state = &belief.GetFirstSample();
+        state = belief.GetFirstSample();
 
     // Delete old tree and create new root
     VNODE::Free(Root, Simulator);
@@ -203,6 +203,7 @@ double MCTS::SimulateQ_rho(STATE& state, QNODE& qnode, int action, BAG& beta, BA
     if (Simulator.HasAlpha())
         Simulator.UpdateAlpha(qnode, state);
     bool terminal = Simulator.Step(state, action, observation, immediateReward);
+    //cout << "reward step normale: " << immediateReward << endl;
 
     assert(observation >= 0 && observation < Simulator.GetNumObservations());
     History.Add(action, observation);
@@ -554,7 +555,9 @@ void MCTS::RolloutSearch()
     int historyDepth = History.Size();
     std::vector<int> legal;
     assert(BeliefState().GetNumSamples() > 0);
-    Simulator.GenerateLegal(BeliefState().GetFirstSample(), GetHistory(), legal, GetStatus());
+    const STATE& s = safe_cast<const STATE&>(*BeliefState().GetFirstSample());
+
+    Simulator.GenerateLegal(s, GetHistory(), legal, GetStatus());
     random_shuffle(legal.begin(), legal.end());
 
     for (int i = 0; i < Params.NumSimulations; i++){

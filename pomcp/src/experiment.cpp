@@ -55,10 +55,16 @@ void EXPERIMENT::Run()
         Real.DisplayState(*state, cout);
     for (t = 0; t < ExpParams.NumSteps; t++)
     {
+        if (XES::enabled())
+            XES::logger().start_event();
         //std::cout << "step numero :" << t << std::endl;
         int observation;
         double reward;
         int action = mcts.SelectAction();
+
+        if (XES::enabled()) {
+            Simulator.log_beliefs(mcts.BeliefState());
+        }
 
 
         std::cout << "azione migliore secondo la simulazione mcts:" << action << std::endl;
@@ -75,6 +81,15 @@ void EXPERIMENT::Run()
             Real.DisplayObservation(*state, observation, cout);
             Real.DisplayReward(reward, cout);
         }
+
+        if (XES::enabled()) {
+            Real.log_action(action);
+            Real.log_observation(*state, observation);
+            Real.log_reward(reward);
+        }
+
+        if (XES::enabled())
+            XES::logger().end_event();
 
         if (terminal)
         {
@@ -139,6 +154,10 @@ void EXPERIMENT::Run()
         << ", average = " << Results.DiscountedReturn.GetMean() << endl;
     cout << "Undiscounted return = " << undiscountedReturn
         << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
+    if (XES::enabled())
+        XES::logger().add_attributes(
+            {{"discounted return", discountedReturn},
+             {"undiscounted return", undiscountedReturn}});
 
 }
 
@@ -148,7 +167,19 @@ void EXPERIMENT::MultiRun()
     {
         cout << "Starting run " << n + 1 << " with "
             << SearchParams.NumSimulations << " simulations... " << endl;
+
+         if (XES::enabled())
+            XES::logger().start_trace();
+
+        if (XES::enabled())
+            XES::logger().add_attributes(
+                {{"run", n + 1}, {"simulations", SearchParams.NumSimulations}});
+
         Run();
+
+        if (XES::enabled())
+            XES::logger().end_trace();
+
         if (Results.Time.GetTotal() > ExpParams.TimeOut)
         {
             cout << "Timed out after " << n << " runs in "
@@ -167,6 +198,15 @@ void EXPERIMENT::DiscountedReturn()
     ExpParams.SimSteps = Simulator.GetHorizon(ExpParams.Accuracy, ExpParams.UndiscountedHorizon);
     ExpParams.NumSteps = Real.GetHorizon(ExpParams.Accuracy, ExpParams.UndiscountedHorizon);
 
+    if (XES::enabled()) {
+        XES::logger().add_attributes({
+            {"MaxDepth", SearchParams.MaxDepth},
+            {"SimSteps", ExpParams.SimSteps},
+            {"NumSteps", ExpParams.NumSteps},
+        });
+        Simulator.log_problem_info();
+    }
+
     for (int i = ExpParams.MinDoubles; i <= ExpParams.MaxDoubles; i++)
     {
         SearchParams.NumSimulations = 1 << i;
@@ -179,6 +219,22 @@ void EXPERIMENT::DiscountedReturn()
 
         Results.Clear();
         MultiRun();
+
+        if (XES::enabled()) {
+            XES::logger().add_attributes(
+                    {{"average undiscounted return",
+                    Results.UndiscountedReturn.GetMean()},
+                    {"average undiscounted return std",
+                    Results.UndiscountedReturn.GetStdErr()},
+                    {"average discounted return", Results.DiscountedReturn.GetMean()},
+                    {"average discounted return std",
+                    Results.DiscountedReturn.GetStdErr()},
+                    {"average time", Results.Time.GetMean()},
+                    {"average time std", Results.Time.GetStdDev()},
+                    {"total time", Results.Time.GetTotal()}
+                    });
+        }
+        
 
         cout << "Simulations = " << SearchParams.NumSimulations << endl
             << "Runs = " << Results.Time.GetCount() << endl

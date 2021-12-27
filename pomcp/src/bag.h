@@ -43,7 +43,7 @@ public:
      int GetNumSamples() const { return container.size(); }
 
     //ritorna l'elemento in posizione index della bag
-    const STATE &GetFirstSample() const { return *container.begin()->first; }
+    const STATE *GetFirstSample() const { return container.begin()->first; }
 
     //ritorna il peso normalizzato associato all'elemento
     double GetNormalizedWeight(STATE* state) const{ return container.at(state)/totalWeight; }
@@ -51,13 +51,10 @@ public:
     //ritorna l'intera bag
     const std::unordered_map<STATE*,double> &getContainer() const{ return container;}
 
-    void printInsert(){std::cout << "n. insert: " << insert << std::endl;}
 
 
 private:
-    static constexpr bool count = false;
     double totalWeight;
-    int insert = 0;
     std::unordered_map<STATE*,double> container;
 
 
