@@ -13,7 +13,7 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
 {
     NumActions = NumRocks + 5;
     NumObservations = 3;
-    RewardRange = 20;
+    RewardRange = 10;//20;
     Discount = 0.95;
 
     if (size == 7 && rocks == 8)
@@ -24,32 +24,17 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
         InitGeneral();
 }
 
+bool ROCKSAMPLE_STATE::isEqual(const STATE &a) const{
 
- bool ROCKSAMPLE_STATE::isEqual(STATE* a)const{
-    ROCKSAMPLE_STATE* A = safe_cast<ROCKSAMPLE_STATE*>(a);
-/*
-    struct ENTRY
-    {
-        bool Valuable;
-        bool Collected;
-        int Count;                  // Smart knowledge
-        int Measured;               // Smart knowledge
-        double LikelihoodValuable;  // Smart knowledge
-        double LikelihoodWorthless; // Smart knowledge
-        double ProbValuable;        // Smart knowledge
-    };
-*/
-    if(Rocks.size() != A->Rocks.size())
+    const auto &A = safe_cast<const ROCKSAMPLE_STATE&>(a);
+
+    if(Rocks.size() != A.Rocks.size())
+        return false;
+    if(view != A.view)
         return false;
 
-    for(int i=0; i< Rocks.size() ; i++){
-        if(A->Rocks[i].Valuable != Rocks[i].Valuable)
-            return false;
-        if(A->Rocks[i].Collected != Rocks[i].Collected)
-            return false;
-
-    }
     return true;
+
 }
 
 void ROCKSAMPLE::InitGeneral()
@@ -160,6 +145,16 @@ STATE* ROCKSAMPLE::CreateStartState() const
         entry.LikelihoodWorthless = 1.0;
         rockstate->Rocks.push_back(entry);
     }
+
+
+    rockstate->view = "";
+    for(int i=0; i < NumRocks; i++){
+        if(rockstate->Rocks[NumRocks-i -1].Valuable)
+            rockstate->view += '1';
+        else
+            rockstate->view+= '0';
+    }
+
     rockstate->Target = SelectTarget(*rockstate);
     return rockstate;
 }
@@ -176,6 +171,7 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
     ROCKSAMPLE_STATE& rockstate = safe_cast<ROCKSAMPLE_STATE&>(state);
     reward = 0;
     observation = E_NONE;
+
 
     if (action < E_SAMPLE) // move
     {
@@ -226,8 +222,10 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
                 //std::cout << "hai pigliato una pietra di valore!!" << std::endl;
                 reward = +10;
             }
-            else
+            else{
+                //std::cout << "hai pigliato una pietra di merda" << std::endl;
                 reward = -10;
+            }
         }
         else
         {
@@ -318,15 +316,13 @@ double ROCKSAMPLE::Rho_reward(const BAG& belief, int action) const{
     }
 
     return r;
-      
-
 }
 
 
 double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int action, const STATE& finalState) const{
 
     if (action <= E_SAMPLE){ //se l'azione è di movimento o di sample (quindi azione non di check)
-        return observation == E_NONE ? 1.0 : 0.0;
+        return observation == E_NONE ? 1.0: 0.0;
     } 
 
     //azione di check
@@ -343,7 +339,6 @@ double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int acti
         return observation == E_GOOD ? efficiency : 1- efficiency;
     else
         return observation == E_BAD? efficiency : 1 - efficiency;
-
 }
 
 
@@ -551,12 +546,23 @@ int ROCKSAMPLE::SelectTarget(const ROCKSAMPLE_STATE& rockstate) const
 void ROCKSAMPLE::DisplayBeliefs(const BAG& beliefState,
     std::ostream& ostr) const
 {
+     if(beliefState.Empty())
+        return;
+
+    ostr << "bag: \n";
+    for (auto& element : beliefState.getContainer()){
+        ostr << "[ ";
+        DisplayState(*element.first,ostr);
+        ostr << " PESO: " << element.second << " ]\n";
+    }
+    
+    ostr << std::endl;
 }
 
 void ROCKSAMPLE::DisplayState(const STATE& state, std::ostream& ostr) const
 {
     const ROCKSAMPLE_STATE& rockstate = safe_cast<const ROCKSAMPLE_STATE&>(state);
-    ostr << endl;
+   /* ostr << endl;
     for (int x = 0; x < Size + 2; x++)
         ostr << "# ";
     ostr << endl;
@@ -580,6 +586,8 @@ void ROCKSAMPLE::DisplayState(const STATE& state, std::ostream& ostr) const
     for (int x = 0; x < Size + 2; x++)
         ostr << "# ";
     ostr << endl;
+    */
+    ostr << rockstate.view;
 }
 
 void ROCKSAMPLE::DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const
@@ -638,7 +646,7 @@ void ROCKSAMPLE::log_problem_info() const {
 
 
 
-//da rivedere bene
+//va bene
 void ROCKSAMPLE::log_beliefs(const BAG& beliefState) const {
     std::unordered_map<std::string, int> dist;
     
@@ -652,32 +660,8 @@ void ROCKSAMPLE::log_beliefs(const BAG& beliefState) const {
 
     for (auto& element : beliefState.getContainer()){
         const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
-
-        std::string valrocks = "";
-        for(int i=0; i < NumRocks; i++){
-            if(rs->Rocks[NumRocks-i -1].Valuable)
-                valrocks += '1';
-            else
-                valrocks+= '0';
-        }
-
-
-        bool is_new = true;
-        for (auto& element : dist){
-            if(element.first == valrocks){
-                is_new = false;
-                element.second++;
-                break;
-            }
-        }
-        if(is_new){
-            dist.insert({valrocks,1});
-        }
-
+        XES::logger().add_attribute({rs->view, element.second});//beliefState.GetNormalizedWeight(element.first)});
     }
-     for (const auto &[k, v] : dist)
-        XES::logger().add_attribute({k, v});
-
 
     XES::logger().end_list();
     
@@ -752,7 +736,7 @@ void ROCKSAMPLE::log_observation(const STATE& state, int observation) const {
 }
 
 //va bene
-void ROCKSAMPLE::log_reward(double reward) const {
+void ROCKSAMPLE::log_reward(double reward) const{
     XES::logger().add_attribute({"reward", reward});
 }
 

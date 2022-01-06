@@ -555,6 +555,8 @@ void MCTS::RolloutSearch()
     int historyDepth = History.Size();
     std::vector<int> legal;
     assert(BeliefState().GetNumSamples() > 0);
+
+    
     const STATE& s = safe_cast<const STATE&>(*BeliefState().GetFirstSample());
 
     Simulator.GenerateLegal(s, GetHistory(), legal, GetStatus());

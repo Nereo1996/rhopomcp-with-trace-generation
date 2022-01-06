@@ -11,7 +11,7 @@ struct TigerState: public STATE {
     TigerState(int position);
     void x(const STATE*) const;
     virtual bool isEqual(const STATE &) const;
-    bool isEqual(const TigerState &) const;
+    //bool isEqual(const TigerState &) const;
 };
 
 class Tiger : public SIMULATOR
@@ -61,9 +61,10 @@ enum
 
 enum
 {
-    OBS_NONE = 0,
-    OBS_RIGHT = 1,
-    OBS_LEFT = 2
+    OBS_TIGER = 0,
+    OBS_TREASURE = 1,
+    OBS_RIGHT = 2,
+    OBS_LEFT = 3
 };
 
 enum

@@ -48,6 +48,11 @@ public:
     //ritorna il peso normalizzato associato all'elemento
     double GetNormalizedWeight(STATE* state) const{ return container.at(state)/totalWeight; }
 
+
+    //ritorna il peso totale di tutti gli elementi della bag
+    double GetTotalWeight() const{ return totalWeight; }
+
+
     //ritorna l'intera bag
     const std::unordered_map<STATE*,double> &getContainer() const{ return container;}
 

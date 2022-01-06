@@ -20,7 +20,7 @@ int Tiger::NumStates() const { return 2; }
 
 Tiger::Tiger(){
     NumActions = 3;
-    NumObservations = 3;
+    NumObservations = 4;
     RewardRange = 102;
     Discount = 0.95;
 }
@@ -55,11 +55,15 @@ int Tiger::reward(const STATE& state, int action ) const{
 }
 
 int Tiger::observation(STATE& state , int action) const {
-    // if open, no observation
-    if (action != ACT_OBS)
-        return OBS_NONE;
 
     TigerState s = safe_cast<TigerState&>(state);
+
+    // if open, no observation
+    if (action == ACT_LEFT)
+        return s.tiger_position == POS_LEFT ? OBS_TIGER : OBS_TREASURE;
+    if (action == ACT_RIGHT)
+        return s.tiger_position == POS_RIGHT ? OBS_TIGER : OBS_TREASURE;
+    
 
     // it must be action == ACT_OBS 
     double r = RandomDouble(0.0, 1.0);
@@ -103,9 +107,9 @@ bool TigerState::isEqual(const STATE &a)const{
     return tiger_position == A.tiger_position;
 }
 
-bool TigerState:: isEqual(const TigerState &s) const {
-    return tiger_position == s.tiger_position;
-}
+//bool TigerState:: isEqual(const TigerState &s) const {
+//    return tiger_position == s.tiger_position;
+//}
 
 void TigerState::x(const STATE* a)const{
     const TigerState* A = safe_cast<const TigerState*>(a);
@@ -185,12 +189,16 @@ void Tiger::DisplayBeliefs(const BAG& beliefState, std::ostream& ostr) const {
 void Tiger::DisplayObservation(const STATE &state, int observation,
         std::ostream &ostr) const {
     ostr << "Observation ";
-    if (observation == OBS_NONE)
-        ostr << "NONE";
+    if (observation == OBS_TIGER)
+        ostr << "Tiger";
+    else if (observation == OBS_TREASURE)
+        ostr << "Treasure";
     else if (observation == OBS_LEFT)
         ostr << "Open Left";
     else if (observation == OBS_RIGHT)
         ostr << "Open Right";
+    else
+        ostr << "ERROR";
 }
 
 
@@ -205,7 +213,7 @@ void Tiger::log_beliefs(const BAG& beliefState) const {
     XES::logger().start_list("belief");
     for (auto& element : beliefState.getContainer()){
         TigerState* ts = safe_cast<TigerState* >(element.first);
-        ts->tiger_position == POS_RIGHT? XES::logger().add_attribute({"tiger right", element.second}) : XES::logger().add_attribute({"tiger left", element.second});
+        ts->tiger_position == POS_RIGHT? XES::logger().add_attribute({"tiger right", beliefState.GetNormalizedWeight(element.first)}) : XES::logger().add_attribute({"tiger left", beliefState.GetNormalizedWeight(element.first)});
     }
     
     XES::logger().end_list();
@@ -247,8 +255,11 @@ void Tiger::log_observation(const STATE&, int observation) const {
         case OBS_RIGHT:
             XES::logger().add_attribute({"observation", "right"});
             break;
-        case OBS_NONE:
-            XES::logger().add_attribute({"observation", "none"});
+        case OBS_TIGER:
+            XES::logger().add_attribute({"observation", "tiger"});
+            break;
+        case OBS_TREASURE:
+            XES::logger().add_attribute({"observation", "treasure"});
             break;
     }
 }

@@ -21,10 +21,10 @@ public:
         double ProbValuable;		// Smart knowledge
     };
 
-    bool isEqual (STATE* a)const;
-
+    virtual bool isEqual(const STATE &) const;
 
     std::vector<ENTRY> Rocks;
+    std::string view;
     int Target; // Smart knowledge
 };
 
