@@ -5,6 +5,9 @@
 #include "coord.h"
 #include "grid.h"
 
+
+
+
 class ROCKSAMPLE_STATE : public STATE
 {
 public:
@@ -32,7 +35,23 @@ class ROCKSAMPLE : public SIMULATOR
 {
 public:
 
-    ROCKSAMPLE(int size, int rocks);
+    struct ROCKSAMPLEPARAM{
+
+        double rNorth = -100;
+        double rSouth = -100;
+        double rWest = -100;
+        double rEast = +10;
+
+        double rValuable = +100;
+        double rNotValuable = -10;
+
+        double rAlreadySampled = -100;
+
+        double HalfEfficiencyDistance = 20;
+    };
+
+
+    ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam);
 
     virtual STATE* Copy(const STATE& state) const;
     virtual void Validate(const STATE& state) const;
@@ -53,7 +72,6 @@ public:
     virtual void DisplayState(const STATE& state, std::ostream& ostr) const;
     virtual void DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const;
     virtual void DisplayAction(int action, std::ostream& ostr) const;
-
 
     virtual int reward(const STATE& state, int action) const;
     virtual double Rho_reward(const BAG& belief, int action) const;
@@ -93,13 +111,14 @@ protected:
     std::vector<COORD> RockPos;
     int Size, NumRocks;
     COORD StartPos;
-    double HalfEfficiencyDistance;
+    //double HalfEfficiencyDistance;
     double SmartMoveProb;
     int UncertaintyCount;
 
 private:
-
+    ROCKSAMPLEPARAM RsParam;
     mutable MEMORY_POOL<ROCKSAMPLE_STATE> MemoryPool;
+
 };
 
 #endif

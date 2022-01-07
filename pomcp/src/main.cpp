@@ -31,6 +31,7 @@ int main(int argc, char* argv[])
     EXPERIMENT::PARAMS expParams;
     SIMULATOR::KNOWLEDGE knowledge;
     string problem, outputfile, policy;
+    ROCKSAMPLE::ROCKSAMPLEPARAM rsparam;
     int size, number,bagsize, treeknowledge = 1, rolloutknowledge = 1, smarttreecount = 10;
     double smarttreevalue = 1.0;
     bool xes_log = true;
@@ -66,9 +67,15 @@ int main(int argc, char* argv[])
         ("smarttreevalue", value<double>(&knowledge.SmartTreeValue), "Prior value for preferred actions during smart tree search")
         ("disabletree", value<bool>(&searchParams.DisableTree), "Use 1-ply rollout action selection")
         ("bagsize", value<int>(&searchParams.bagsize), "size of bags)")
+        ("rewsud", value<double>(&rsparam.rSouth), "Reward in rocksample to exit on the south side of the grid")
+        ("rewnord", value<double>(&rsparam.rNorth), "Reward in rocksample to exit on the north side of the grid")
+        ("reweast", value<double>(&rsparam.rEast), "Reward in rocksample to exit on the east side of the grid")
+        ("rewwest", value<double>(&rsparam.rWest), "Reward in rocksample to exit on the west side of the grid")
+        ("rewvaluable", value<double>(&rsparam.rValuable), "Reward in rocksample if the sampled rock is valuable")
+        ("rewnotvaluable", value<double>(&rsparam.rNotValuable), "Reward in rocksample if the sampled rock is not valuable")
+        ("halfefficiency", value<double>(&rsparam.HalfEfficiencyDistance), "Half efficiency distance in rocksample. indicates as the distance increases how much the precision decreases")
+        ("rewalreadysampled", value<double>(&rsparam.rAlreadySampled), "Reward in rocksample if the rock to be sampled has already been sampled ")
         ("xes", value<bool>(&xes_log)->default_value(true), "Enable XES log");
-
-        ;
 
     variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -100,8 +107,8 @@ int main(int argc, char* argv[])
 
     if (problem == "rocksample")
     {
-        real = new ROCKSAMPLE(size, number);
-        simulator = new ROCKSAMPLE(size, number);
+        real = new ROCKSAMPLE(size, number, rsparam);
+        simulator = new ROCKSAMPLE(size, number, rsparam);
     }
     else if(problem == "tiger")
     {
@@ -116,6 +123,7 @@ int main(int argc, char* argv[])
 
 
     simulator->SetKnowledge(knowledge);
+
     EXPERIMENT experiment(*real, *simulator, outputfile, expParams, searchParams);
     experiment.DiscountedReturn();
 

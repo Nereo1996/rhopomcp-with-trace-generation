@@ -4,7 +4,23 @@
 using namespace std;
 using namespace UTILS;
 
-ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
+
+
+/*
+
+    double rNorth = -100;
+    double rSouth = -100;
+    double rWest = -100;
+    double rEast = +10;
+
+    double rValuable = +10;
+    double rNotValuable = -10;
+
+    double HalfEfficiencyDistance = 20;
+
+*/
+
+ROCKSAMPLE::ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam)
 :   Grid(size, size),
     Size(size),
     NumRocks(rocks),
@@ -15,6 +31,7 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks)
     NumObservations = 3;
     RewardRange = 10;//20;
     Discount = 0.95;
+    RsParam = rsParam;
 
     if (size == 7 && rocks == 8)
         Init_7_8();
@@ -39,7 +56,7 @@ bool ROCKSAMPLE_STATE::isEqual(const STATE &a) const{
 
 void ROCKSAMPLE::InitGeneral()
 {
-    HalfEfficiencyDistance = 20;
+    //HalfEfficiencyDistance = 20;
     StartPos = COORD(0, Size / 2);
     RandomSeed(0);
     Grid.SetAllValues(-1);
@@ -73,7 +90,7 @@ void ROCKSAMPLE::Init_7_8()
         COORD(1, 6)
     };
 
-    HalfEfficiencyDistance = 20;
+    //HalfEfficiencyDistance = 20;
     StartPos = COORD(0, 3);
     Grid.SetAllValues(-1);
     for (int i = 0; i < NumRocks; ++i)
@@ -103,7 +120,7 @@ void ROCKSAMPLE::Init_11_11()
         COORD(9, 9)
     };
 
-    HalfEfficiencyDistance = 20;
+    //HalfEfficiencyDistance = 20;
     StartPos = COORD(0, 5);
     Grid.SetAllValues(-1);
     for (int i = 0; i < NumRocks; ++i)
@@ -185,7 +202,7 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
                 }
                 else
                 {
-                    reward = +10;
+                    reward = RsParam.rEast;
                     return true;
                 }
 
@@ -193,21 +210,21 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
                 if (rockstate.AgentPos.Y + 1 < Size)
                     rockstate.AgentPos.Y++;
                 else
-                    reward = -100;
+                    reward = RsParam.rNorth;
                 break;
 
             case COORD::E_SOUTH:
                 if (rockstate.AgentPos.Y - 1 >= 0)
                     rockstate.AgentPos.Y--;
                 else
-                    reward = -100;
+                    reward = RsParam.rSouth;
                 break;
 
             case COORD::E_WEST:
                 if (rockstate.AgentPos.X - 1 >= 0)
                     rockstate.AgentPos.X--;
                 else
-                    reward = -100;
+                    reward = RsParam.rWest;
                 break;
         }
     }
@@ -220,16 +237,16 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
             rockstate.Rocks[rock].Collected = true;
             if (rockstate.Rocks[rock].Valuable){
                 //std::cout << "hai pigliato una pietra di valore!!" << std::endl;
-                reward = +10;
+                reward = RsParam.rValuable;
             }
             else{
                 //std::cout << "hai pigliato una pietra di merda" << std::endl;
-                reward = -10;
+                reward = RsParam.rNotValuable;
             }
         }
         else
         {
-            reward = -100;
+            reward = RsParam.rAlreadySampled;
         }
     }
 
@@ -241,7 +258,7 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
         rockstate.Rocks[rock].Measured++;
 
         double distance = COORD::EuclideanDistance(rockstate.AgentPos, RockPos[rock]);
-    	double efficiency = (1 + pow(2, -distance / HalfEfficiencyDistance)) * 0.5;
+    	double efficiency = (1 + pow(2, -distance / RsParam.HalfEfficiencyDistance)) * 0.5;
 
         if (observation == E_GOOD)
         {
@@ -272,21 +289,20 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
 int ROCKSAMPLE::reward(const STATE& state, int action) const{
 
     const ROCKSAMPLE_STATE& rockstate = safe_cast<const ROCKSAMPLE_STATE&>(state);
-
     if (action < E_SAMPLE){ // move
         switch (action){
             case COORD::E_EAST:
                 if (!(rockstate.AgentPos.X + 1 < Size))
-                    return +10;
+                    return RsParam.rEast;
             case COORD::E_NORTH:
                 if (!(rockstate.AgentPos.Y + 1 < Size))
-                    return -100;
+                    return RsParam.rNorth;
             case COORD::E_SOUTH:
                 if (!(rockstate.AgentPos.Y - 1 >= 0))
-                    return -100;
+                    return RsParam.rSouth;
             case COORD::E_WEST:
                 if (!(rockstate.AgentPos.X - 1 >= 0))
-                    return -100;
+                    return RsParam.rWest;
         }
     }
 
@@ -294,12 +310,12 @@ int ROCKSAMPLE::reward(const STATE& state, int action) const{
         int rock = Grid(rockstate.AgentPos);
         if (rock >= 0 && !rockstate.Rocks[rock].Collected){
             if (rockstate.Rocks[rock].Valuable)
-                return +10;
+                return RsParam.rValuable;
             else
-                return -10;
+                return RsParam.rNotValuable;
         }
         else
-            return -100;
+            return RsParam.rAlreadySampled;
     }
 
 
@@ -333,7 +349,7 @@ double ROCKSAMPLE::ProbObs(int observation, const STATE& startingState, int acti
     assert(rock < NumRocks);
 
     double distance = COORD::EuclideanDistance(startRSstate.AgentPos, RockPos[rock]);
-    double efficiency = (1 + pow(2, -distance / HalfEfficiencyDistance)) * 0.5;
+    double efficiency = (1 + pow(2, -distance / RsParam.HalfEfficiencyDistance)) * 0.5;
 
     if(startRSstate.Rocks[rock].Valuable)
         return observation == E_GOOD ? efficiency : 1- efficiency;
@@ -518,7 +534,7 @@ void ROCKSAMPLE::GeneratePreferred(const STATE& state, const HISTORY& history,
 int ROCKSAMPLE::GetObservation(const ROCKSAMPLE_STATE& rockstate, int rock) const
 {
     double distance = COORD::EuclideanDistance(rockstate.AgentPos, RockPos[rock]);
-    double efficiency = (1 + pow(2, -distance / HalfEfficiencyDistance)) * 0.5;
+    double efficiency = (1 + pow(2, -distance / RsParam.HalfEfficiencyDistance)) * 0.5;
 
     if (Bernoulli(efficiency))
         return rockstate.Rocks[rock].Valuable ? E_GOOD : E_BAD;
@@ -626,7 +642,7 @@ void ROCKSAMPLE::log_problem_info() const {
     XES::logger().add_attributes({
             {"problem", "rocksample"},
             {"RewardRange", RewardRange},
-            {"HalfEfficiencyDistance", HalfEfficiencyDistance},
+            {"HalfEfficiencyDistance", RsParam.HalfEfficiencyDistance},
             {"Size", Size},
             {"NumRocks", NumRocks}
         });
@@ -660,9 +676,10 @@ void ROCKSAMPLE::log_beliefs(const BAG& beliefState) const {
 
     for (auto& element : beliefState.getContainer()){
         const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
-        XES::logger().add_attribute({rs->view, element.second});//beliefState.GetNormalizedWeight(element.first)});
+        XES::logger().add_attribute({rs->view, beliefState.GetNormalizedWeight(element.first)});
     }
 
+    XES::logger().add_attribute({"Num of particle", (int)beliefState.GetTotalWeight()});
     XES::logger().end_list();
     
 }

@@ -590,4 +590,3 @@ void MCTS::RolloutSearch()
         History.Truncate(historyDepth);
     }
 }
-

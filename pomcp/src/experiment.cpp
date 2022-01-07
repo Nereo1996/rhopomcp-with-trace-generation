@@ -63,7 +63,7 @@ void EXPERIMENT::Run()
         int action = mcts.SelectAction();
 
         if (XES::enabled()) {
-            //Simulator.log_beliefs(mcts.BeliefState());
+            Simulator.log_beliefs(mcts.BeliefState());
         }
 
 
