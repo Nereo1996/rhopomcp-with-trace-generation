@@ -14,6 +14,8 @@ using namespace UTILS;
 static constexpr bool PRINT_VALUES = false;
 static constexpr bool PRINT_IT = false;
 static constexpr bool PRINT_DEBUG_TREE = false;
+static constexpr bool PRINT_NEXT_BELIEFS = true;
+
 
 MCTS::PARAMS::PARAMS() :
     Verbose(0),
@@ -124,7 +126,22 @@ int MCTS::SelectAction()
         RolloutSearch();
     else
         UCTSearch();
-    return GreedyUCB(Root, false);
+        //se sposto tutto qua dentro sono al megatop 
+        int action = GreedyUCB(Root, false);
+        if (XES::enabled()) {
+            Simulator.log_beliefs(BeliefState(), false);
+            if(PRINT_NEXT_BELIEFS){
+                for (int observation = 0; observation < Simulator.GetNumObservations(); observation++){
+                    if (Root->Child(action).Child(observation)){
+                        //cout << "num observation:" << observation << endl;
+                        Simulator.log_beliefs(Root->Child(action).Child(observation)->Beliefs(), true);
+                    }
+                }
+
+            }
+        }
+
+    return action;
 }
 
 

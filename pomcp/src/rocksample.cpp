@@ -6,20 +6,6 @@ using namespace UTILS;
 
 
 
-/*
-
-    double rNorth = -100;
-    double rSouth = -100;
-    double rWest = -100;
-    double rEast = +10;
-
-    double rValuable = +10;
-    double rNotValuable = -10;
-
-    double HalfEfficiencyDistance = 20;
-
-*/
-
 ROCKSAMPLE::ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam)
 :   Grid(size, size),
     Size(size),
@@ -404,6 +390,18 @@ void ROCKSAMPLE::GenerateLegal(const STATE& state, const HISTORY& history,
     if (rockstate.AgentPos.X - 1 >= 0)
         legal.push_back(COORD::E_WEST);
 
+    /*
+    //se il problema permette di uscire da qualsiasi lato:
+    legal.push_back(COORD::E_NORTH);
+    legal.push_back(COORD::E_EAST);
+    legal.push_back(COORD::E_SOUTH);
+    legal.push_back(COORD::E_WEST);
+    */
+
+
+
+
+
     int rock = Grid(rockstate.AgentPos);
     if (rock >= 0 && !rockstate.Rocks[rock].Collected)
         legal.push_back(E_SAMPLE);
@@ -516,6 +514,23 @@ void ROCKSAMPLE::GeneratePreferred(const STATE& state, const HISTORY& history,
 
 	if (rockstate.AgentPos.X - 1 >= 0 && west_interesting)
 		actions.push_back(COORD::E_WEST);
+
+    /*
+    //se il problema permette di uscire da qualsiasi lato:
+    if (north_interesting)
+        actions.push_back(COORD::E_NORTH);
+
+    if (east_interesting)
+        actions.push_back(COORD::E_EAST);
+
+    if (south_interesting)
+        actions.push_back(COORD::E_SOUTH);
+
+    if (west_interesting)
+        actions.push_back(COORD::E_WEST);
+    */
+
+
 
 
 	for (rock = 0; rock < NumRocks; ++rock)
@@ -663,24 +678,46 @@ void ROCKSAMPLE::log_problem_info() const {
 
 
 //va bene
-void ROCKSAMPLE::log_beliefs(const BAG& beliefState) const {
-    std::unordered_map<std::string, int> dist;
-    
-    const STATE& s = safe_cast<const STATE&>(*beliefState.GetFirstSample());
-    auto* rstate = safe_cast<const ROCKSAMPLE_STATE*>(&s);
+void ROCKSAMPLE::log_beliefs(const BAG& beliefState, bool nextBeliefs) const {
 
-    XES::logger().add_attribute({"coord x", rstate->AgentPos.X });
-    XES::logger().add_attribute({"coord y", rstate->AgentPos.Y });
 
-    XES::logger().start_list("belief");
+    if(!nextBeliefs){
+        //print agent's position
+        
+        const STATE& s = safe_cast<const STATE&>(*beliefState.GetFirstSample());
+        auto* rstate = safe_cast<const ROCKSAMPLE_STATE*>(&s);
 
-    for (auto& element : beliefState.getContainer()){
-        const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
-        XES::logger().add_attribute({rs->view, beliefState.GetNormalizedWeight(element.first)});
+        XES::logger().add_attribute({"coord x", rstate->AgentPos.X });
+        XES::logger().add_attribute({"coord y", rstate->AgentPos.Y });
+
+
+        //print belief
+
+        XES::logger().start_list("belief");
+
+        for (auto& element : beliefState.getContainer()){
+            const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
+            XES::logger().add_attribute({rs->view, beliefState.GetNormalizedWeight(element.first)});
+        }
+        XES::logger().add_attribute({"Num of particle", (int)beliefState.GetTotalWeight()});
+
+        XES::logger().end_list();
+
+    } else{
+
+         XES::logger().start_list("belief a livello sottostante");
+
+        for (auto& element : beliefState.getContainer()){
+            const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
+            XES::logger().add_attribute({rs->view, beliefState.GetNormalizedWeight(element.first)});
+        }
+        XES::logger().add_attribute({"Num of particle", (int)beliefState.GetTotalWeight()});
+
+        XES::logger().end_list();
+
+
     }
-
-    XES::logger().add_attribute({"Num of particle", (int)beliefState.GetTotalWeight()});
-    XES::logger().end_list();
+  
     
 }
 

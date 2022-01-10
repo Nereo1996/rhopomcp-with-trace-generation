@@ -208,7 +208,7 @@ void Tiger::DisplayObservation(const STATE &state, int observation,
 
 
 //da rivedere
-void Tiger::log_beliefs(const BAG& beliefState) const {
+void Tiger::log_beliefs(const BAG& beliefState, bool nextBeliefs) const {
 
     XES::logger().start_list("belief");
     for (auto& element : beliefState.getContainer()){

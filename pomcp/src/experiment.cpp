@@ -62,10 +62,9 @@ void EXPERIMENT::Run()
         double reward;
         int action = mcts.SelectAction();
 
-        if (XES::enabled()) {
-            Simulator.log_beliefs(mcts.BeliefState());
-        }
-
+        //if (XES::enabled()) {
+        //    Simulator.log_beliefs(mcts.BeliefState(), action);
+        //}
 
         std::cout << "azione migliore secondo la simulazione mcts:" << action << std::endl;
         terminal = Real.Step(*state, action, observation, reward);
