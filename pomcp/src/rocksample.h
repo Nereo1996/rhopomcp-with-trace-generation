@@ -37,21 +37,25 @@ public:
 
     struct ROCKSAMPLEPARAM{
 
-        double rNorth = -100;
-        double rSouth = -100;
-        double rWest = -100;
+        double rNorth = -10;
+        double rSouth = -10;
+        double rWest = -10;
         double rEast = +10;
 
         double rValuable = +100;
-        double rNotValuable = -10;
+        double rNotValuable = -100;
 
         double rAlreadySampled = -100;
 
         double HalfEfficiencyDistance = 20;
+        
+        int RewardRange = 100;
+        std::string valuableRocks = "";
+
     };
 
 
-    ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam);
+    ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam, bool fixed=false);
 
     virtual STATE* Copy(const STATE& state) const;
     virtual void Validate(const STATE& state) const;
@@ -80,7 +84,7 @@ public:
 
     //functions for xes logging
     virtual void log_problem_info() const;
-    virtual void log_beliefs(const BAG& beliefState, bool nextBeliefs) const;
+    virtual void log_beliefs(const BAG& beliefState, int action, int observation) const;
     //virtual void log_beliefs(const BAG& beliefState) const;
 
     virtual void log_state(const STATE& state) const;
@@ -116,6 +120,7 @@ protected:
     //double HalfEfficiencyDistance;
     double SmartMoveProb;
     int UncertaintyCount;
+    bool fixed=false;
 
 private:
     ROCKSAMPLEPARAM RsParam;

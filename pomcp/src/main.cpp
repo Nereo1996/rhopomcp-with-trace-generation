@@ -67,14 +67,16 @@ int main(int argc, char* argv[])
         ("smarttreevalue", value<double>(&knowledge.SmartTreeValue), "Prior value for preferred actions during smart tree search")
         ("disabletree", value<bool>(&searchParams.DisableTree), "Use 1-ply rollout action selection")
         ("bagsize", value<int>(&searchParams.bagsize), "size of bags)")
-        ("rewsud", value<double>(&rsparam.rSouth), "Reward in rocksample to exit on the south side of the grid")
-        ("rewnord", value<double>(&rsparam.rNorth), "Reward in rocksample to exit on the north side of the grid")
+        ("rewsouth", value<double>(&rsparam.rSouth), "Reward in rocksample to exit on the south side of the grid")
+        ("rewnorth", value<double>(&rsparam.rNorth), "Reward in rocksample to exit on the north side of the grid")
         ("reweast", value<double>(&rsparam.rEast), "Reward in rocksample to exit on the east side of the grid")
         ("rewwest", value<double>(&rsparam.rWest), "Reward in rocksample to exit on the west side of the grid")
         ("rewvaluable", value<double>(&rsparam.rValuable), "Reward in rocksample if the sampled rock is valuable")
         ("rewnotvaluable", value<double>(&rsparam.rNotValuable), "Reward in rocksample if the sampled rock is not valuable")
         ("halfefficiency", value<double>(&rsparam.HalfEfficiencyDistance), "Half efficiency distance in rocksample. indicates as the distance increases how much the precision decreases")
         ("rewalreadysampled", value<double>(&rsparam.rAlreadySampled), "Reward in rocksample if the rock to be sampled has already been sampled ")
+        ("valuableRocks", value<string>(&rsparam.valuableRocks), "Choose which rock is valuable/not valuable")
+        ("rewardrange", value<int>(&rsparam.RewardRange), "modify RewardRange for Rocksample")
         ("xes", value<bool>(&xes_log)->default_value(true), "Enable XES log");
 
     variables_map vm;
@@ -107,8 +109,8 @@ int main(int argc, char* argv[])
 
     if (problem == "rocksample")
     {
-        real = new ROCKSAMPLE(size, number, rsparam);
-        simulator = new ROCKSAMPLE(size, number, rsparam);
+        real = new ROCKSAMPLE(size, number, rsparam,true);
+        simulator = new ROCKSAMPLE(size, number, rsparam,false);
     }
     else if(problem == "tiger")
     {

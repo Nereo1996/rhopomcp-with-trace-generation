@@ -14,7 +14,6 @@ using namespace UTILS;
 static constexpr bool PRINT_VALUES = false;
 static constexpr bool PRINT_IT = false;
 static constexpr bool PRINT_DEBUG_TREE = false;
-static constexpr bool PRINT_NEXT_BELIEFS = true;
 
 
 MCTS::PARAMS::PARAMS() :
@@ -55,7 +54,6 @@ MCTS::MCTS(const SIMULATOR& simulator, const PARAMS& params)
         Simulator.FreeState(s);
     }
 
-
 }
 
 MCTS::~MCTS()
@@ -64,7 +62,7 @@ MCTS::~MCTS()
     VNODE::FreeAll();
 }
 
-bool MCTS::Update(int action, int observation, double /*reward*/)
+bool MCTS::Update(int action, int observation, double reward)
 {
     History.Add(action, observation);
     BAG belief;
@@ -73,6 +71,50 @@ bool MCTS::Update(int action, int observation, double /*reward*/)
     QNODE& qnode = Root->Child(action);
     VNODE* vnode = qnode.Child(observation);
 
+    if (XES::enabled()){
+        XES::logger().start_event();
+        XES::logger().add_attribute({"even type", "Root" });
+        Simulator.log_beliefs(Root->Beliefs(), -1, observation);
+        Simulator.log_action(action);
+        Simulator.log_observation(*Root->Beliefs().GetFirstSample(), observation);
+        Simulator.log_reward(reward);
+
+        XES::logger().start_list("Valuable actions");
+        for (int a = 0; a < Simulator.GetNumActions(); a++){
+            Simulator.log_action(a);
+            XES::logger().add_attribute({"Q Value", Root->Child(a).Value.GetValue()}); 
+        }
+        XES::logger().end_list();
+        XES::logger().end_event();
+    }
+
+
+            
+    for (int a = 0; a < Simulator.GetNumActions(); a++){
+        for (int o = 0; o < Simulator.GetNumObservations(); o++){
+            if (Root->Child(a).Child(o) && (a != action || o != observation)){
+
+                if (XES::enabled()){
+                    XES::logger().start_event();
+                    XES::logger().add_attribute({"even type", "depth +1" });
+                    Simulator.log_beliefs(Root->Child(a).Child(o)->Beliefs(), a, o);
+                    Simulator.log_action(a);
+                    Simulator.log_observation(*Root->Beliefs().GetFirstSample(), o);
+                    Simulator.log_reward(reward);
+
+                    XES::logger().start_list("Valuable actions");
+                    for (int ac = 0; ac < Simulator.GetNumActions(); ac++){
+                        Simulator.log_action(ac);
+                        XES::logger().add_attribute({"Q Value", Root->Child(a).Child(o)->Child(ac).Value.GetValue()}); 
+                    }
+                    XES::logger().end_list();
+                    XES::logger().end_event();
+                }
+
+
+            }
+        }
+    }
     if (vnode) {
       if (Params.Verbose >= 1)
         cout << "Matched " << vnode->Beliefs().GetNumSamples() << " states"
@@ -126,22 +168,8 @@ int MCTS::SelectAction()
         RolloutSearch();
     else
         UCTSearch();
-        //se sposto tutto qua dentro sono al megatop 
-        int action = GreedyUCB(Root, false);
-        if (XES::enabled()) {
-            Simulator.log_beliefs(BeliefState(), false);
-            if(PRINT_NEXT_BELIEFS){
-                for (int observation = 0; observation < Simulator.GetNumObservations(); observation++){
-                    if (Root->Child(action).Child(observation)){
-                        //cout << "num observation:" << observation << endl;
-                        Simulator.log_beliefs(Root->Child(action).Child(observation)->Beliefs(), true);
-                    }
-                }
 
-            }
-        }
-
-    return action;
+    return GreedyUCB(Root, false);
 }
 
 
@@ -522,7 +550,7 @@ int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const
     bool hasalpha = Simulator.HasAlpha();
 
     for (int action = 0; action < Simulator.GetNumActions(); action++)
-    {
+    { 
         double q, alphaq;
         int n, alphan;
 
@@ -557,6 +585,7 @@ int MCTS::GreedyUCB(VNODE* vnode, bool ucb) const
             bestq = q;
             besta.push_back(action);
         }
+
     }
 
     assert(!besta.empty());

@@ -43,7 +43,7 @@ public:
 
     //functions for xes logging
     virtual void log_problem_info() const;
-    virtual void log_beliefs(const BAG& beliefState, bool nextBeliefs) const;
+    virtual void log_beliefs(const BAG& beliefState, int action, int observation) const;
     virtual void log_state(const STATE& state) const;
     virtual void log_action(int action) const;
     //log observation: changed observation_t in int. idk if it's right at the moment.

@@ -21,7 +21,7 @@ int Tiger::NumStates() const { return 2; }
 Tiger::Tiger(){
     NumActions = 3;
     NumObservations = 4;
-    RewardRange = 102;
+    RewardRange = 110;
     Discount = 0.95;
 }
 
@@ -208,15 +208,30 @@ void Tiger::DisplayObservation(const STATE &state, int observation,
 
 
 //da rivedere
-void Tiger::log_beliefs(const BAG& beliefState, bool nextBeliefs) const {
+void Tiger::log_beliefs(const BAG& beliefState, int action, int observation ) const {
 
-    XES::logger().start_list("belief");
-    for (auto& element : beliefState.getContainer()){
-        TigerState* ts = safe_cast<TigerState* >(element.first);
-        ts->tiger_position == POS_RIGHT? XES::logger().add_attribute({"tiger right", beliefState.GetNormalizedWeight(element.first)}) : XES::logger().add_attribute({"tiger left", beliefState.GetNormalizedWeight(element.first)});
-    }
-    
+    if(action == -1){
+        XES::logger().start_list("Root");
+        XES::logger().start_list("belief");
+        for (auto& element : beliefState.getContainer()){
+            TigerState* ts = safe_cast<TigerState* >(element.first);
+            ts->tiger_position == POS_RIGHT? XES::logger().add_attribute({"tiger right", beliefState.GetNormalizedWeight(element.first)}) : XES::logger().add_attribute({"tiger left", beliefState.GetNormalizedWeight(element.first)});
+        }
+    XES::logger().add_attribute({"Num of particle", (int)beliefState.GetTotalWeight()});
     XES::logger().end_list();
+    XES::logger().end_list();
+
+    } else{
+        XES::logger().start_list("next belief with action: " + std::to_string(action) + " and observation: " +std::to_string(observation));
+        for (auto& element : beliefState.getContainer()){
+            TigerState* ts = safe_cast<TigerState* >(element.first);
+            ts->tiger_position == POS_RIGHT? XES::logger().add_attribute({"tiger right", beliefState.GetNormalizedWeight(element.first)}) : XES::logger().add_attribute({"tiger left", beliefState.GetNormalizedWeight(element.first)});
+        }
+        XES::logger().add_attribute({"Num of particle", (int)beliefState.GetTotalWeight()});
+        XES::logger().end_list();
+
+    }
+
 }
 
 
@@ -253,7 +268,7 @@ void Tiger::log_observation(const STATE&, int observation) const {
             XES::logger().add_attribute({"observation", "roar left"});
             break;
         case OBS_RIGHT:
-            XES::logger().add_attribute({"observation", "right"});
+            XES::logger().add_attribute({"observation", "roar right"});
             break;
         case OBS_TIGER:
             XES::logger().add_attribute({"observation", "tiger"});

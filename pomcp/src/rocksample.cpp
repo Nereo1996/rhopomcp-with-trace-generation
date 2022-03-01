@@ -6,18 +6,19 @@ using namespace UTILS;
 
 
 
-ROCKSAMPLE::ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam)
+ROCKSAMPLE::ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam, bool fix)
 :   Grid(size, size),
     Size(size),
     NumRocks(rocks),
     SmartMoveProb(0.95),
-    UncertaintyCount(0)
+    UncertaintyCount(0),
+    fixed(fix)
 {
+    RsParam = rsParam;
     NumActions = NumRocks + 5;
     NumObservations = 3;
-    RewardRange = 10;//20;
+    RewardRange = RsParam.RewardRange;//20; <-- try to modify
     Discount = 0.95;
-    RsParam = rsParam;
 
     if (size == 7 && rocks == 8)
         Init_7_8();
@@ -25,6 +26,7 @@ ROCKSAMPLE::ROCKSAMPLE(int size, int rocks, const ROCKSAMPLEPARAM& rsParam)
         Init_11_11();
     else
         InitGeneral();
+
 }
 
 bool ROCKSAMPLE_STATE::isEqual(const STATE &a) const{
@@ -140,7 +142,24 @@ STATE* ROCKSAMPLE::CreateStartState() const
     {
         ROCKSAMPLE_STATE::ENTRY entry;
         entry.Collected = false;
-        entry.Valuable = Bernoulli(0.5);
+
+        if(fixed){
+            if(RsParam.valuableRocks == "" || RsParam.valuableRocks.length() != NumRocks)
+                entry.Valuable = Bernoulli(0.5);
+            else{
+                char value = RsParam.valuableRocks[NumRocks-i -1];
+                if(value == '0')
+                    entry.Valuable = false;
+                else if(value == '1')
+                    entry.Valuable = true;
+                else
+                    entry.Valuable = Bernoulli(0.5);
+            }
+        }else{
+            entry.Valuable = Bernoulli(0.5);
+        }
+    
+
         entry.Count = 0;
         entry.Measured = 0;
         entry.ProbValuable = 0.5;
@@ -157,6 +176,8 @@ STATE* ROCKSAMPLE::CreateStartState() const
         else
             rockstate->view+= '0';
     }
+
+    //std::cout << "view dello stato: " << rockstate->view << std::endl;
 
     rockstate->Target = SelectTarget(*rockstate);
     return rockstate;
@@ -181,8 +202,7 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
         switch (action)
         {
             case COORD::E_EAST:
-                if (rockstate.AgentPos.X + 1 < Size)
-                {
+                if (rockstate.AgentPos.X + 1 < Size){
                     rockstate.AgentPos.X++;
                     break;
                 }
@@ -193,25 +213,32 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
                 }
 
             case COORD::E_NORTH:
-                if (rockstate.AgentPos.Y + 1 < Size)
+                if (rockstate.AgentPos.Y + 1 < Size){
                     rockstate.AgentPos.Y++;
-                else
+                    break;
+                }
+                else{
                     reward = RsParam.rNorth;
-                break;
-
+                    return true;
+                }
             case COORD::E_SOUTH:
-                if (rockstate.AgentPos.Y - 1 >= 0)
+                if (rockstate.AgentPos.Y - 1 >= 0){
                     rockstate.AgentPos.Y--;
-                else
+                    break;
+                }
+                else{
                     reward = RsParam.rSouth;
-                break;
-
+                    return true;
+                }
             case COORD::E_WEST:
-                if (rockstate.AgentPos.X - 1 >= 0)
+                if (rockstate.AgentPos.X - 1 >= 0){
                     rockstate.AgentPos.X--;
-                else
+                    break;
+                }
+                else{
                     reward = RsParam.rWest;
-                break;
+                    return true; 
+                }
         }
     }
 
@@ -222,11 +249,9 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
         {
             rockstate.Rocks[rock].Collected = true;
             if (rockstate.Rocks[rock].Valuable){
-                //std::cout << "hai pigliato una pietra di valore!!" << std::endl;
                 reward = RsParam.rValuable;
             }
             else{
-                //std::cout << "hai pigliato una pietra di merda" << std::endl;
                 reward = RsParam.rNotValuable;
             }
         }
@@ -267,7 +292,7 @@ bool ROCKSAMPLE::Step(STATE& state, int action,
     if (rockstate.Target < 0 || rockstate.AgentPos == RockPos[rockstate.Target])
         rockstate.Target = SelectTarget(rockstate);
 
-    assert(reward != -100);
+    //assert(reward != -100);
     return false;
 }
 
@@ -379,26 +404,30 @@ void ROCKSAMPLE::GenerateLegal(const STATE& state, const HISTORY& history,
     const ROCKSAMPLE_STATE& rockstate =
         safe_cast<const ROCKSAMPLE_STATE&>(state);
 
-    if (rockstate.AgentPos.Y + 1 < Size)
+
+    if(RsParam.rNorth>0)
         legal.push_back(COORD::E_NORTH);
+    else
+        if (rockstate.AgentPos.Y + 1 < Size)
+            legal.push_back(COORD::E_NORTH);
 
-    legal.push_back(COORD::E_EAST);
+    if(RsParam.rEast>0)
+        legal.push_back(COORD::E_EAST);
+    else
+        if (rockstate.AgentPos.X + 1 < Size)
+            legal.push_back(COORD::E_EAST);
 
-    if (rockstate.AgentPos.Y - 1 >= 0)
+    if(RsParam.rSouth>0)
         legal.push_back(COORD::E_SOUTH);
+    else
+        if (rockstate.AgentPos.Y - 1 >= 0)
+            legal.push_back(COORD::E_SOUTH);
 
-    if (rockstate.AgentPos.X - 1 >= 0)
+    if(RsParam.rWest>0)
         legal.push_back(COORD::E_WEST);
-
-    /*
-    //se il problema permette di uscire da qualsiasi lato:
-    legal.push_back(COORD::E_NORTH);
-    legal.push_back(COORD::E_EAST);
-    legal.push_back(COORD::E_SOUTH);
-    legal.push_back(COORD::E_WEST);
-    */
-
-
+    else
+        if (rockstate.AgentPos.X - 1 >= 0)
+            legal.push_back(COORD::E_WEST);
 
 
 
@@ -415,14 +444,14 @@ void ROCKSAMPLE::GeneratePreferred(const STATE& state, const HISTORY& history,
     vector<int>& actions, const STATUS& status) const
 {
 
-	static const bool UseBlindPolicy = false;
+/*	static const bool UseBlindPolicy = false;
 
 	if (UseBlindPolicy)
 	{
 		actions.push_back(COORD::E_EAST);
 		return;
 	}
-
+*/
 	const ROCKSAMPLE_STATE& rockstate =
 	        safe_cast<const ROCKSAMPLE_STATE&>(state);
 
@@ -490,11 +519,21 @@ void ROCKSAMPLE::GeneratePreferred(const STATE& state, const HISTORY& history,
 	}
 
 	// if all remaining rocks seem bad, then head east
+    // check in all direction if the reward is positive, else head east.
 	if (all_bad)
 	{
-		actions.push_back(COORD::E_EAST);
-		return;
-	}
+        if(RsParam.rEast>0)
+            actions.push_back(COORD::E_EAST);
+        if(RsParam.rNorth>0)
+            actions.push_back(COORD::E_NORTH);
+        if(RsParam.rSouth>0)
+            actions.push_back(COORD::E_SOUTH);
+        if(RsParam.rWest>0)
+            actions.push_back(COORD::E_WEST);
+        if(RsParam.rWest<=0 && RsParam.rEast<= 0 && RsParam.rNorth<=0 && RsParam.rSouth<=0)
+            actions.push_back(COORD::E_EAST);
+		//return;
+    }
 
 	// generate a random legal move, with the exceptions that:
 	//   a) there is no point measuring a rock that is already collected
@@ -503,32 +542,35 @@ void ROCKSAMPLE::GeneratePreferred(const STATE& state, const HISTORY& history,
 	//   d) we never sample a rock (since we need to be sure)
 	//   e) we never move in a direction that doesn't take us closer to
 	//      either the edge of the map or an interesting rock
-	if (rockstate.AgentPos.Y + 1 < Size && north_interesting)
+
+
+    if(RsParam.rNorth>0)
+        if (north_interesting)
+            actions.push_back(COORD::E_NORTH);
+    else
+        if (rockstate.AgentPos.Y + 1 < Size && north_interesting)
 			actions.push_back(COORD::E_NORTH);
 
-	if (east_interesting)
-		actions.push_back(COORD::E_EAST);
+    if(RsParam.rEast>0)
+        if (east_interesting)
+            actions.push_back(COORD::E_EAST);
+    else
+        if (rockstate.AgentPos.X+1 < Size && east_interesting)
+		  actions.push_back(COORD::E_EAST);
 
-	if (rockstate.AgentPos.Y - 1 >= 0 && south_interesting)
-		actions.push_back(COORD::E_SOUTH);
+    if(RsParam.rSouth>0)
+        if (south_interesting)
+            actions.push_back(COORD::E_SOUTH);
+    else
+        if (rockstate.AgentPos.Y - 1 >= 0 && south_interesting)
+		  actions.push_back(COORD::E_SOUTH);
 
-	if (rockstate.AgentPos.X - 1 >= 0 && west_interesting)
-		actions.push_back(COORD::E_WEST);
-
-    /*
-    //se il problema permette di uscire da qualsiasi lato:
-    if (north_interesting)
-        actions.push_back(COORD::E_NORTH);
-
-    if (east_interesting)
-        actions.push_back(COORD::E_EAST);
-
-    if (south_interesting)
-        actions.push_back(COORD::E_SOUTH);
-
-    if (west_interesting)
-        actions.push_back(COORD::E_WEST);
-    */
+    if(RsParam.rWest>0)
+        if (west_interesting)
+            actions.push_back(COORD::E_WEST);
+    else
+        if (rockstate.AgentPos.X - 1 >= 0 && west_interesting)
+		  actions.push_back(COORD::E_WEST);
 
 
 
@@ -538,12 +580,18 @@ void ROCKSAMPLE::GeneratePreferred(const STATE& state, const HISTORY& history,
 		if (!rockstate.Rocks[rock].Collected    &&
 			rockstate.Rocks[rock].ProbValuable != 0.0 &&
 			rockstate.Rocks[rock].ProbValuable != 1.0 &&
-			rockstate.Rocks[rock].Measured < 5  &&
+			rockstate.Rocks[rock].Measured < 2  &&
 			std::abs(rockstate.Rocks[rock].Count) < 2)
 		{
 			actions.push_back(rock + 1 + E_SAMPLE);
 		}
 	}
+
+  //  for(auto a : actions){
+  //      std::cout << a << " ";
+  //  }
+  //  std::cout << std::endl;
+
 }
 
 int ROCKSAMPLE::GetObservation(const ROCKSAMPLE_STATE& rockstate, int rock) const
@@ -593,7 +641,7 @@ void ROCKSAMPLE::DisplayBeliefs(const BAG& beliefState,
 void ROCKSAMPLE::DisplayState(const STATE& state, std::ostream& ostr) const
 {
     const ROCKSAMPLE_STATE& rockstate = safe_cast<const ROCKSAMPLE_STATE&>(state);
-   /* ostr << endl;
+    ostr << endl;
     for (int x = 0; x < Size + 2; x++)
         ostr << "# ";
     ostr << endl;
@@ -617,8 +665,7 @@ void ROCKSAMPLE::DisplayState(const STATE& state, std::ostream& ostr) const
     for (int x = 0; x < Size + 2; x++)
         ostr << "# ";
     ostr << endl;
-    */
-    ostr << rockstate.view;
+  //  ostr << rockstate.view;
 }
 
 void ROCKSAMPLE::DisplayObservation(const STATE& state, int observation, std::ostream& ostr) const
@@ -678,11 +725,12 @@ void ROCKSAMPLE::log_problem_info() const {
 
 
 //va bene
-void ROCKSAMPLE::log_beliefs(const BAG& beliefState, bool nextBeliefs) const {
+void ROCKSAMPLE::log_beliefs(const BAG& beliefState, int action , int observation ) const {
 
 
-    if(!nextBeliefs){
+    if(action == -1){
         //print agent's position
+        XES::logger().start_list("Root");
         
         const STATE& s = safe_cast<const STATE&>(*beliefState.GetFirstSample());
         auto* rstate = safe_cast<const ROCKSAMPLE_STATE*>(&s);
@@ -693,7 +741,7 @@ void ROCKSAMPLE::log_beliefs(const BAG& beliefState, bool nextBeliefs) const {
 
         //print belief
 
-        XES::logger().start_list("belief");
+
 
         for (auto& element : beliefState.getContainer()){
             const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
@@ -705,7 +753,7 @@ void ROCKSAMPLE::log_beliefs(const BAG& beliefState, bool nextBeliefs) const {
 
     } else{
 
-         XES::logger().start_list("belief a livello sottostante");
+         XES::logger().start_list("next belief with action: " + std::to_string(action) + " and observation: " +std::to_string(observation));
 
         for (auto& element : beliefState.getContainer()){
             const ROCKSAMPLE_STATE* rs = safe_cast<ROCKSAMPLE_STATE* >(element.first);
@@ -775,7 +823,7 @@ void ROCKSAMPLE::log_action(int action) const {
 
 
 //va bene
-void ROCKSAMPLE::log_observation(const STATE& state, int observation) const {
+void ROCKSAMPLE::log_observation(const STATE&, int observation) const {
     switch (observation) {
         case E_NONE:
             XES::logger().add_attribute({"observation", "none"});

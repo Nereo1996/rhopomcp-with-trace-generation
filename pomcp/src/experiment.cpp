@@ -55,15 +55,15 @@ void EXPERIMENT::Run()
         Real.DisplayState(*state, cout);
     for (t = 0; t < ExpParams.NumSteps; t++)
     {
-        if (XES::enabled())
-            XES::logger().start_event();
+        //if (XES::enabled())
+        //    XES::logger().start_event();
         //std::cout << "step numero :" << t << std::endl;
         int observation;
         double reward;
         int action = mcts.SelectAction();
 
         //if (XES::enabled()) {
-        //    Simulator.log_beliefs(mcts.BeliefState(), action);
+        //    Simulator.log_beliefs(mcts.BeliefState(), action, -1);
         //}
 
         std::cout << "azione migliore secondo la simulazione mcts:" << action << std::endl;
@@ -81,17 +81,26 @@ void EXPERIMENT::Run()
             Real.DisplayReward(reward, cout);
         }
 
-        if (XES::enabled()) {
-            Real.log_action(action);
-            Real.log_observation(*state, observation);
-            Real.log_reward(reward);
-        }
+        //if (XES::enabled()) {
+        //    Real.log_action(action);
+        //    Real.log_observation(*state, observation);
+        //    Real.log_reward(reward);
+        //}
 
-        if (XES::enabled())
-            XES::logger().end_event();
+        //if (XES::enabled())
+        //    XES::logger().end_event();
 
         if (terminal)
         {
+            if (XES::enabled()){
+                XES::logger().start_event();
+                XES::logger().add_attribute({"even type", "Root" });
+                Simulator.log_beliefs(mcts.BeliefState(), -1, observation);
+                Simulator.log_action(action);
+                Simulator.log_observation(*state, observation);
+                Simulator.log_reward(reward);
+                XES::logger().end_event();
+            }
             cout << "Terminated" << endl;
             break;
         }
@@ -146,6 +155,7 @@ void EXPERIMENT::Run()
 
     }
 
+
     Results.Time.Add(timer.elapsed());
     Results.UndiscountedReturn.Add(undiscountedReturn);
     Results.DiscountedReturn.Add(discountedReturn);
@@ -153,6 +163,7 @@ void EXPERIMENT::Run()
         << ", average = " << Results.DiscountedReturn.GetMean() << endl;
     cout << "Undiscounted return = " << undiscountedReturn
         << ", average = " << Results.UndiscountedReturn.GetMean() << endl;
+    
     if (XES::enabled())
         XES::logger().add_attributes(
             {{"discounted return", discountedReturn},
